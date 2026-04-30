@@ -1,0 +1,18 @@
+{
+  "name": "l1-revision",
+  "version": "0.1.0",
+  "description": "L1 planning document revision workflow: pause all instances, open a PR on the planning branch, wait for human review and merge, then resume.",
+  "capabilities": {
+    "filesystem": "write",
+    "network": true,
+    "github_push": true,
+    "shell_exec": true
+  },
+  "dependencies": [
+    "workflow-utils/pause-at-boundary",
+    "github-ops/create-pr",
+    "github-ops/post-comment",
+    "doc-ops/validate-doc",
+    "doc-ops/write-doc"
+  ]
+}

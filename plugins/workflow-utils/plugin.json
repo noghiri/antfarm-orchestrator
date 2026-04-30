@@ -1,12 +1,16 @@
 {
   "name": "workflow-utils",
   "version": "0.1.0",
-  "description": "Workflow utilities: dependency ordering, context assembly for agents, feature split proposals, cold-start reconciliation, and CI status checks",
+  "description": "Workflow utilities: dependency ordering, context assembly, feature split proposals, cold-start reconciliation, CI checks, pause coordination, escalation routing, and multi-instance rules",
   "skills": [
     "dependency-graph",
     "context-assembly",
     "split-proposal",
     "reconcile-state",
-    "check-ci"
+    "check-ci",
+    "pause-at-boundary",
+    "route-escalations",
+    "multi-instance",
+    "l1-revision"
   ]
 }
