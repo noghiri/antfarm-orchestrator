@@ -1,4 +1,35 @@
 {
   "version": "1.0.0",
-  "plugins": {}
+  "plugins": {
+    "house-style": {
+      "path": "plugins/house-style",
+      "version": "0.1.0",
+      "description": "Coding standards, patterns, and language guides for all agents"
+    },
+    "agent-skills": {
+      "path": "plugins/agent-skills",
+      "version": "0.1.0",
+      "description": "Meta-skills for agent operation: task management, escalation, research, testing"
+    },
+    "github-ops": {
+      "path": "plugins/github-ops",
+      "version": "0.1.0",
+      "description": "GitHub API operations: issues, PRs, labels, commits"
+    },
+    "doc-ops": {
+      "path": "plugins/doc-ops",
+      "version": "0.1.0",
+      "description": "Planning document operations: validation, staleness checks, revision management"
+    },
+    "workflow-utils": {
+      "path": "plugins/workflow-utils",
+      "version": "0.1.0",
+      "description": "Workflow utilities: dependency graphs, context assembly, split proposals, package lookup"
+    },
+    "code-quality": {
+      "path": "plugins/code-quality",
+      "version": "0.1.0",
+      "description": "Toolchain-agnostic build and lint wrappers"
+    }
+  }
 }

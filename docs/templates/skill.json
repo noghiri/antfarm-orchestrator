@@ -1,0 +1,12 @@
+{
+  "name": "skill-name-with-hyphens",
+  "version": "0.1.0",
+  "description": "Brief description of what this skill does",
+  "capabilities": {
+    "filesystem": "none",
+    "network": false,
+    "github_push": false,
+    "shell_exec": false
+  },
+  "dependencies": []
+}

@@ -1,0 +1,28 @@
+{
+  "locked": {
+    "house-style": {
+      "version": "0.1.0",
+      "path": "plugins/house-style"
+    },
+    "agent-skills": {
+      "version": "0.1.0",
+      "path": "plugins/agent-skills"
+    },
+    "github-ops": {
+      "version": "0.1.0",
+      "path": "plugins/github-ops"
+    },
+    "doc-ops": {
+      "version": "0.1.0",
+      "path": "plugins/doc-ops"
+    },
+    "workflow-utils": {
+      "version": "0.1.0",
+      "path": "plugins/workflow-utils"
+    },
+    "code-quality": {
+      "version": "0.1.0",
+      "path": "plugins/code-quality"
+    }
+  }
+}
