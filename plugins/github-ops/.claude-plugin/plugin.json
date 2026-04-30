@@ -1,0 +1,8 @@
+{
+  "name": "github-ops",
+  "version": "0.1.0",
+  "description": "GitHub Issue and PR operations via the gh CLI. Covers issue creation, updates, label management, work unit claiming/releasing, PR creation, and comment posting. All mutations are dry-run by default.",
+  "author": {
+    "name": "noghiri@gmail.com"
+  }
+}

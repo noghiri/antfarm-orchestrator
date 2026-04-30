@@ -41,6 +41,27 @@ $env:ANTHROPIC_API_KEY = "sk-ant-..." # PowerShell
 
 ---
 
+## Installing the plugins
+
+The orchestrator ships as a Claude Code plugin marketplace. Install the plugins once — they are globally available across all projects.
+
+```sh
+# Add this repo as a marketplace source (run once)
+/plugin marketplace add <github-user>/Orchestrator
+
+# Install each plugin
+/plugin install house-style@orchestrator-plugins
+/plugin install agent-skills@orchestrator-plugins
+/plugin install github-ops@orchestrator-plugins
+/plugin install doc-ops@orchestrator-plugins
+/plugin install workflow-utils@orchestrator-plugins
+/plugin install code-quality@orchestrator-plugins
+```
+
+Skills installed this way are stored in `~/.claude/plugins/cache/` and are available in any Claude Code session without repeating the install.
+
+---
+
 ## Setting up a new project
 
 ### 1. Clone or create the target repository
@@ -150,11 +171,16 @@ Each instance is scoped to a single feature and will only claim work units for t
 Orchestrator/                  # This repo
   .claude-mode.json            # Agent behavioral presets
   .claude/settings.json        # Hooks (task list reinforcement)
-  marketplace.json             # Plugin registry
-  plugins.lock                 # Pinned plugin versions
-  plugins/                     # Skills and instruction files
+  .claude-plugin/
+    marketplace.json           # Plugin marketplace manifest
+  plugins/                     # Plugin source
     house-style/
-    agent-skills/
+      .claude-plugin/
+        plugin.json            # Plugin manifest
+      skills/
+        <name>/
+          SKILL.md             # Skill instruction + frontmatter
+    agent-skills/              # (same structure)
     github-ops/
     doc-ops/
     workflow-utils/
@@ -185,4 +211,4 @@ Orchestrator/                  # This repo
 
 **Label creation fails**: Verify your GitHub token has `repo` scope with write access to issues and pull requests.
 
-**Agent does not follow house style**: Ensure the `house-style` plugin is listed in `project.yaml`'s `orchestrator.plugins` and that the skill instruction files are present in `plugins/house-style/skills/`.
+**Agent does not follow house style**: Ensure the `house-style` plugin is installed (`/plugin install house-style@orchestrator-plugins`) and listed in `project.yaml`'s `orchestrator.plugins`.

@@ -1,0 +1,38 @@
+{
+  "name": "orchestrator-plugins",
+  "owner": {
+    "name": "noghiri@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "house-style",
+      "source": "./plugins/house-style",
+      "description": "Coding standards and security practices for all agents. Covers minimal footprint, comment discipline, TDD, dry-run compliance, defense in depth, Rust guidelines, and task list discipline."
+    },
+    {
+      "name": "agent-skills",
+      "source": "./plugins/agent-skills",
+      "description": "Core agent capabilities: escalation protocol, external research, task lifecycle management, sub-agent spawning, and stuck detection."
+    },
+    {
+      "name": "github-ops",
+      "source": "./plugins/github-ops",
+      "description": "GitHub Issue and PR operations via the gh CLI. Covers issue creation, updates, label management, work unit claiming/releasing, PR creation, and comment posting. All mutations are dry-run by default."
+    },
+    {
+      "name": "doc-ops",
+      "source": "./plugins/doc-ops",
+      "description": "Planning document operations: frontmatter parsing, schema validation, staleness checks, validated writes with git commits, and stage gate checklists."
+    },
+    {
+      "name": "workflow-utils",
+      "source": "./plugins/workflow-utils",
+      "description": "Orchestration workflow utilities: feature dependency graph, context assembly, split proposals, state reconciliation, CI checks, instance pause/resume, escalation routing, multi-instance coordination, and L1 revision workflow."
+    },
+    {
+      "name": "code-quality",
+      "source": "./plugins/code-quality",
+      "description": "Toolchain-agnostic code quality checks: build, lint, test, and contract test runners. Commands are read from project.yaml. All failures are hard blocks."
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "agent-skills",
+  "version": "0.1.0",
+  "description": "Core agent capabilities: escalation protocol, external research, task lifecycle management, sub-agent spawning, and stuck detection.",
+  "author": {
+    "name": "noghiri@gmail.com"
+  }
+}

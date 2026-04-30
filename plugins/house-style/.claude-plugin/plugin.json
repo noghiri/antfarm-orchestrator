@@ -1,0 +1,8 @@
+{
+  "name": "house-style",
+  "version": "0.1.0",
+  "description": "Coding standards and security practices for all agents. Covers minimal footprint, comment discipline, TDD, dry-run compliance, defense in depth, Rust guidelines, and task list discipline.",
+  "author": {
+    "name": "noghiri@gmail.com"
+  }
+}

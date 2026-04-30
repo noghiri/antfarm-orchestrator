@@ -1,0 +1,8 @@
+{
+  "name": "code-quality",
+  "version": "0.1.0",
+  "description": "Toolchain-agnostic code quality checks: build, lint, test, and contract test runners. Commands are read from project.yaml. All failures are hard blocks.",
+  "author": {
+    "name": "noghiri@gmail.com"
+  }
+}
