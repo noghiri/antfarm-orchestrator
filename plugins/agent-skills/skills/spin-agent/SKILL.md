@@ -16,15 +16,17 @@ Use the `spin-agent` skill when you (as the orchestrator) need to delegate a sta
 
 ## Preset selection
 
-Select the agent preset based on the stage:
+Select the agent preset and model based on the stage:
 
-| Stage | Preset |
-|-------|--------|
-| System Design | `system-planner` |
-| Feature Design | `feature-planner` |
-| Implementation | `builder` |
-| Peer Review | `reviewer` |
-| Orchestration | `orchestrator` |
+| Stage | Preset | Model | Model ID |
+|-------|--------|-------|----------|
+| System Design | `system-planner` | `opus` | `claude-opus-4-7` |
+| Feature Design | `feature-planner` | `opus` | `claude-opus-4-7` |
+| Implementation | `builder` | `sonnet` | `claude-sonnet-4-6` |
+| Peer Review | `reviewer` | `sonnet` | `claude-sonnet-4-6` |
+| Orchestration | `orchestrator` | `sonnet` | `claude-sonnet-4-6` |
+
+Planning agents (`system-planner`, `feature-planner`) use `opus` because they make architectural decisions with high downstream leverage. Execution agents (`builder`, `reviewer`) use `sonnet` — the spec is fully locked at that point and reasoning quality is bounded by the work unit scope.
 
 ## Context assembly
 
@@ -36,7 +38,7 @@ Before spawning a sub-agent, assemble its context using `workflow-utils/context-
 
 ## Invocation
 
-Spawn the sub-agent using the Claude Code `Agent` tool with `subagent_type: "general-purpose"`. The `prompt` argument is the assembled context returned by `workflow-utils/context-assembly` — it already contains the role's behavioral preset instructions, all relevant documents, and the skills list, so no additional wrapping is needed.
+Spawn the sub-agent using the Claude Code `Agent` tool with `subagent_type: "general-purpose"` and the `model` value from the table above. The `prompt` argument is the assembled context returned by `workflow-utils/context-assembly` — it already contains the role's behavioral preset instructions, all relevant documents, and the skills list, so no additional wrapping is needed.
 
 The assembled context must be the entire `prompt` value. Do not summarize or paraphrase it; pass it in full so the sub-agent has the complete spec.
 

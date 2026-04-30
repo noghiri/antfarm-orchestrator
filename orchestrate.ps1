@@ -112,7 +112,7 @@ function Start-Session([string]$ProjectSlug, [string]$AbsProjectDir, [string]$Fe
     # and perform git/file operations in the target repo.
     Push-Location $Script:Root
     try {
-        & claude-mode orchestrator --modifier orchestrator-role --modifier context-pacing --append-system-prompt $context
+        & claude-mode orchestrator --modifier orchestrator-role --modifier context-pacing --model claude-sonnet-4-6 --append-system-prompt $context
     }
     finally {
         Pop-Location
