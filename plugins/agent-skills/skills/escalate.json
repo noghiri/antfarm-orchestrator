@@ -1,0 +1,12 @@
+{
+  "name": "escalate",
+  "version": "0.1.0",
+  "description": "Surface a blocking decision or unresolved ambiguity to the human. Blocks the current work unit until the human responds. Used when an agent cannot proceed without human input.",
+  "capabilities": {
+    "filesystem": "read",
+    "network": false,
+    "github_push": false,
+    "shell_exec": false
+  },
+  "dependencies": []
+}

@@ -1,0 +1,12 @@
+{
+  "name": "research",
+  "version": "0.1.0",
+  "description": "Lightweight web search and documentation lookup. Fetches external information and returns results directly to the calling agent's context. Does not produce a standalone research document.",
+  "capabilities": {
+    "filesystem": "none",
+    "network": true,
+    "github_push": false,
+    "shell_exec": false
+  },
+  "dependencies": []
+}

@@ -1,0 +1,12 @@
+{
+  "name": "agent-skills",
+  "version": "0.1.0",
+  "description": "Meta-skills for agent operation: escalation, research, task management, agent spawning, and stuck detection",
+  "skills": [
+    "escalate",
+    "research",
+    "task-manage",
+    "spin-agent",
+    "self-assess"
+  ]
+}

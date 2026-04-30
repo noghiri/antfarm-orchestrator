@@ -1,0 +1,12 @@
+{
+  "name": "task-manage",
+  "version": "0.1.0",
+  "description": "Create, query, and update tasks in the active task list. Wraps TaskCreate, TaskGet, TaskList, and TaskUpdate to provide structured task lifecycle management within a work unit.",
+  "capabilities": {
+    "filesystem": "none",
+    "network": false,
+    "github_push": false,
+    "shell_exec": false
+  },
+  "dependencies": []
+}
