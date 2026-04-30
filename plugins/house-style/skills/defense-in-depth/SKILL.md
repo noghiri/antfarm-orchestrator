@@ -31,3 +31,9 @@ When a security check fails or a permission is ambiguous, deny by default. Do no
 ## Explicit trust boundaries
 
 Document (with a one-line comment) any point where trust level changes: where untrusted data enters a trusted context, or where a privileged operation begins. These are the points where reviewers should focus.
+
+---
+
+## Attribution
+
+This skill was inspired by the `defense-in-depth` skill in [ed3d-plugins](https://github.com/ed3dai/ed3d-plugins) by Ed Ropple and contributors (CC BY-SA 4.0). The content here focuses on security hardening rather than validation-layer correctness, and was written independently.

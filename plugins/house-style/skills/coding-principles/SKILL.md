@@ -41,3 +41,9 @@ Do not rename unused variables with a leading underscore, re-export removed type
 ## No emojis
 
 Do not add emojis to code, comments, commit messages, or any written output unless the user explicitly requests them.
+
+---
+
+## Attribution
+
+This skill was inspired by the `coding-effectively` skill in [ed3d-plugins](https://github.com/ed3dai/ed3d-plugins) by Ed Ropple and contributors (CC BY-SA 4.0). The content here reflects this project's specific conventions and was written independently.

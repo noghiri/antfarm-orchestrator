@@ -43,3 +43,9 @@ Add dependencies deliberately. Every new `Cargo.toml` entry must have a clear ju
 ## Clippy
 
 All code must pass `cargo clippy -- -D warnings` with no suppressions unless a specific lint is demonstrably wrong for the use case. Document any `#[allow(...)]` with a comment explaining why.
+
+---
+
+## Attribution
+
+This skill is derived from the `howto-code-in-rust` skill in [ed3d-plugins](https://github.com/ed3dai/ed3d-plugins) by Ed Ropple and contributors, and is licensed under [Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)](https://creativecommons.org/licenses/by-sa/4.0/). Changes were made: content was condensed and adapted to this project's toolchain and conventions.

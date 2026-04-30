@@ -32,3 +32,9 @@ Use the `research` skill to look up external information needed to complete a ta
 ## Research scope
 
 Research is scoped to the immediate task. Do not research tangential topics. If your research reveals a significant new risk or constraint, surface it via `escalate` rather than acting on it unilaterally.
+
+---
+
+## Attribution
+
+This skill was inspired by the `researching-on-the-internet` skill in [ed3d-plugins](https://github.com/ed3dai/ed3d-plugins) by Ed Ropple and contributors (CC BY-SA 4.0). The content here was written independently for this project's workflow.
