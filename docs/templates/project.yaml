@@ -1,0 +1,29 @@
+name: "[Project Name]"
+slug: project-slug
+
+github:
+  owner: "[github-username-or-org]"
+  repo: "[repo-name]"
+  base_branch: main
+  planning_branch: planning
+
+ci:
+  enabled: false
+  required: false
+  provider: none
+
+toolchain:
+  language: "[language]"
+  build: "[build command, e.g. cargo build]"
+  test: "[test command, e.g. cargo test]"
+  lint: "[lint command, e.g. cargo clippy]"
+
+orchestrator:
+  escalation_target: "[github-username or @handle]"
+  plugins:
+    - house-style
+    - agent-skills
+    - github-ops
+    - doc-ops
+    - workflow-utils
+    - code-quality

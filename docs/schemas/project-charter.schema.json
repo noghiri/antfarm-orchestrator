@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "project-charter",
+  "title": "Project Charter",
+  "description": "L1 document: project overview, objectives, scope, and feasibility",
+  "type": "object",
+  "required": ["doc_type", "version", "status", "created", "revised", "revision"],
+  "additionalProperties": true,
+  "properties": {
+    "doc_type": {
+      "type": "string",
+      "const": "project-charter"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "approved"]
+    },
+    "created": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "revised": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    }
+  }
+}

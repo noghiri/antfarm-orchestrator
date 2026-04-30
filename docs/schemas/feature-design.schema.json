@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "feature-design",
+  "title": "Feature Design",
+  "description": "L2 document: feature spec, work units, acceptance criteria, and contract tests",
+  "type": "object",
+  "required": [
+    "doc_type", "version", "status", "created", "revised", "revision",
+    "feature_id", "feature_name", "ci_required", "depends_on_decisions"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "doc_type": {
+      "type": "string",
+      "const": "feature-design"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "approved", "in_progress", "complete"]
+    },
+    "created": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "revised": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "feature_id": {
+      "type": "string",
+      "pattern": "^F\\d{3}$"
+    },
+    "feature_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ci_required": {
+      "type": "boolean"
+    },
+    "depends_on_decisions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

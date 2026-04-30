@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "project-config",
+  "title": "Project Configuration",
+  "description": "Per-project configuration file: GitHub repo, CI settings, toolchain, and orchestrator options",
+  "type": "object",
+  "required": ["name", "slug", "github", "ci", "toolchain", "orchestrator"],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "github": {
+      "type": "object",
+      "required": ["owner", "repo", "base_branch", "planning_branch"],
+      "additionalProperties": false,
+      "properties": {
+        "owner": {"type": "string"},
+        "repo": {"type": "string"},
+        "base_branch": {"type": "string"},
+        "planning_branch": {"type": "string"}
+      }
+    },
+    "ci": {
+      "type": "object",
+      "required": ["enabled", "required"],
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "required": {"type": "boolean"},
+        "provider": {
+          "type": "string",
+          "enum": ["github-actions", "none"]
+        }
+      }
+    },
+    "toolchain": {
+      "type": "object",
+      "required": ["language"],
+      "additionalProperties": false,
+      "properties": {
+        "language": {"type": "string"},
+        "build": {"type": "string"},
+        "test": {"type": "string"},
+        "lint": {"type": "string"}
+      }
+    },
+    "orchestrator": {
+      "type": "object",
+      "required": ["escalation_target"],
+      "additionalProperties": false,
+      "properties": {
+        "escalation_target": {"type": "string"},
+        "plugins": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    }
+  }
+}
