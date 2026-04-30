@@ -21,10 +21,10 @@ This walkthrough traces a minimal project — a single-endpoint HTTP health-chec
 
 ```powershell
 # Dry-run first to see what will be created
-.\orchestrate.ps1 new --Project ping-server --Repo your-org/ping-server --ProjectDir C:\Projects\ping-server
+.\orchestrate.ps1 new -Project ping-server -Repo your-org/ping-server -ProjectDir C:\Projects\ping-server
 
 # Apply
-.\orchestrate.ps1 new --Project ping-server --Repo your-org/ping-server --ProjectDir C:\Projects\ping-server --Execute
+.\orchestrate.ps1 new -Project ping-server -Repo your-org/ping-server -ProjectDir C:\Projects\ping-server -Execute
 ```
 
 Interactive prompts and expected answers:

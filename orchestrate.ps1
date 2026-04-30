@@ -8,16 +8,16 @@
     State is stored in <project-dir>/.orchestrator/ — inside the project repo.
 .EXAMPLE
     # Initialize a new project (dry-run by default)
-    .\orchestrate.ps1 new --Project my-app --Repo myorg/my-app --ProjectDir C:\Projects\my-app
+    .\orchestrate.ps1 new -Project my-app -Repo myorg/my-app -ProjectDir C:\Projects\my-app
 
     # Apply the initialization
-    .\orchestrate.ps1 new --Project my-app --Repo myorg/my-app --ProjectDir C:\Projects\my-app --Execute
+    .\orchestrate.ps1 new -Project my-app -Repo myorg/my-app -ProjectDir C:\Projects\my-app -Execute
 
     # Resume an existing project
-    .\orchestrate.ps1 resume --Project my-app
+    .\orchestrate.ps1 resume -Project my-app
 
     # Resume scoped to one feature (multi-instance)
-    .\orchestrate.ps1 resume --Project my-app --Feature F001
+    .\orchestrate.ps1 resume -Project my-app -Feature F001
 
     # List all registered projects
     .\orchestrate.ps1 list
@@ -112,6 +112,7 @@ function Start-Session([string]$ProjectSlug, [string]$AbsProjectDir, [string]$Fe
     # and perform git/file operations in the target repo.
     Push-Location $Script:Root
     try {
+        # TODO: verify 'context-pacing' is a built-in claude-code-modes modifier; if not, define it in .claude-mode.json or remove the flag
         & claude-mode orchestrator --modifier orchestrator-role --modifier context-pacing --model claude-sonnet-4-6 --append-system-prompt $context
     }
     finally {

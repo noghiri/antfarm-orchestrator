@@ -83,18 +83,18 @@ Six plugin packages loaded into every session:
 /plugin install code-quality@orchestrator-plugins
 
 # 2. Initialize a new project (dry-run to preview, then apply)
-.\orchestrate.ps1 new --Project my-project --Repo github-user/my-repo
-.\orchestrate.ps1 new --Project my-project --Repo github-user/my-repo --Execute
+.\orchestrate.ps1 new -Project my-project -Repo github-user/my-repo -ProjectDir C:\path\to\my-repo
+.\orchestrate.ps1 new -Project my-project -Repo github-user/my-repo -ProjectDir C:\path\to\my-repo -Execute
 
 # 3. The orchestrator session starts automatically after initialization.
 #    Work through the planning stages interactively.
 
 # 4. Resume in a later session
-.\orchestrate.ps1 resume --Project my-project
+.\orchestrate.ps1 resume -Project my-project
 
 # Multi-instance: one session per feature
-.\orchestrate.ps1 resume --Project my-project --Feature F001  # terminal 1
-.\orchestrate.ps1 resume --Project my-project --Feature F002  # terminal 2
+.\orchestrate.ps1 resume -Project my-project -Feature F001  # terminal 1
+.\orchestrate.ps1 resume -Project my-project -Feature F002  # terminal 2
 
 # List all registered projects
 .\orchestrate.ps1 list
@@ -125,6 +125,7 @@ Orchestrator/                  # This tool's directory
     schemas/                   # JSON schemas for all document types and state files
     templates/                 # Document templates and CI workflow template
     setup/                     # Setup guide, walkthrough, and decision log
+  scripts/                     # orchestrate command documentation
   projects.json                # Project registry — maps slugs to project directories (gitignored)
 
 <your-project-dir>/            # Each project's own directory (a separate git repo)

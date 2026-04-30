@@ -1,6 +1,6 @@
 # Orchestrator Setup
 
-This system manages software projects through three stages (Research/Planning, Building, Integration) using a team of specialized Claude agents. This guide covers installing prerequisites and initializing your first project.
+This system manages software projects through two phases (Planning and Building) using a team of specialized Claude agents. This guide covers installing prerequisites and initializing your first project.
 
 ## Prerequisites
 
@@ -74,10 +74,10 @@ From the orchestrator directory:
 
 ```powershell
 # Dry run first (see what would be created)
-.\orchestrate.ps1 new --Project my-project --Repo github-user/my-repo --ProjectDir C:\path\to\my-repo
+.\orchestrate.ps1 new -Project my-project -Repo github-user/my-repo -ProjectDir C:\path\to\my-repo
 
 # Apply
-.\orchestrate.ps1 new --Project my-project --Repo github-user/my-repo --ProjectDir C:\path\to\my-repo --Execute
+.\orchestrate.ps1 new -Project my-project -Repo github-user/my-repo -ProjectDir C:\path\to\my-repo -Execute
 ```
 
 This will:
@@ -147,8 +147,8 @@ The orchestrator's `check-ci` skill queries `gh run list --branch <branch>` to v
 
 ### 5. Start the orchestrator
 
-```sh
-orchestrate resume --project my-project
+```powershell
+.\orchestrate.ps1 resume -Project my-project
 ```
 
 The orchestrator will begin the Project Charter stage — a collaborative conversation to define what you are building.
@@ -157,16 +157,16 @@ The orchestrator will begin the Project Charter stage — a collaborative conver
 
 ## Resuming a project
 
-```sh
-orchestrate resume --project my-project
+```powershell
+.\orchestrate.ps1 resume -Project my-project
 ```
 
 On startup, the orchestrator runs `reconcile-state` to re-sync with GitHub Issue state from any previous session.
 
 ## Listing projects
 
-```sh
-orchestrate list
+```powershell
+.\orchestrate.ps1 list
 ```
 
 ---
@@ -175,15 +175,15 @@ orchestrate list
 
 To run multiple instances in parallel (one per feature):
 
-```sh
+```powershell
 # Terminal 1
-orchestrate resume --project my-project --feature F001
+.\orchestrate.ps1 resume -Project my-project -Feature F001
 
 # Terminal 2
-orchestrate resume --project my-project --feature F002
+.\orchestrate.ps1 resume -Project my-project -Feature F002
 ```
 
-Each instance is scoped to a single feature and will only claim work units for that feature. See `plugins/workflow-utils/skills/multi-instance.md` for the full coordination rules.
+Each instance is scoped to a single feature and will only claim work units for that feature. See `plugins/workflow-utils/skills/multi-instance/SKILL.md` for the full coordination rules.
 
 ---
 
