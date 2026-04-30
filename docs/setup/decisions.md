@@ -1,6 +1,6 @@
 # Orchestrator — Architectural Decisions & Implementation Status
 
-_Last updated: 2026-04-30._
+_Last updated: 2026-04-30 (D9–D13 added from smoketest findings)._
 
 ---
 
@@ -76,6 +76,41 @@ Residual race (two instances incorrectly assigned the same feature): the alphabe
 - `prompts/orchestrator.md` has a "Context management" section specifying the stateless principle, compaction signal points (each stage gate, each feature completion), and durable sources
 - `workflow-utils/context-reload` (new skill) defines the reload procedure: state file → project config → planning document inventory → reconcile-state → dependency graph
 - Planning documents are inventoried by frontmatter only (not loaded in full); full content is passed to sub-agents via `context-assembly`
+
+---
+
+### D9 — `orchestrate new` scope: local files only
+**Decision:** `Invoke-New` in `orchestrate.ps1` creates local files only: `.orchestrator/project.yaml`, `.orchestrator/state.json`, and the `projects.json` registry entry. All GitHub operations (label creation, planning branch creation) move into the orchestrator agent's first-run startup procedure.
+
+**Rationale:** The agent already needs to interact with GitHub throughout its lifecycle. Keeping GitHub ops in the agent ensures they happen after the intake dialog (D11) and toolchain discovery (D12), when the agent has enough context to make informed choices.
+
+---
+
+### D10 — Toolchain/CI prompts removed from init
+**Decision:** All toolchain and CI prompts are removed from `Invoke-New`. The corresponding fields in `project.yaml` are left null at init time. System-planner populates them during planning after language and framework are decided.
+
+**Rationale:** Language, framework, and build tooling are planning decisions — they cannot be known at script runtime. Prompting for them upfront forces premature choices.
+
+---
+
+### D11 — Interactive intake skill for planner agents
+**Decision:** A dedicated `agent-skills/intake` skill is created. System-planner and feature-planner both load it before drafting any document. The skill enforces a structured discovery dialog: introduce scope, ask one question at a time, summarize understanding, get explicit user confirmation before proceeding to draft.
+
+**Rationale:** Both system-planner and feature-planner share the same failure mode (assuming rather than asking). A shared skill is more maintainable than duplicating intake logic in each prompt.
+
+---
+
+### D12 — Toolchain discovery as a system-planner workflow step
+**Decision:** After language and framework are settled during planning, system-planner runs a toolchain discovery step: asks about required tools (compilers, runtimes, package managers), checks availability, and writes build/test/run commands to `project.yaml`. No new document type is introduced.
+
+**Rationale:** Tool discovery is tightly coupled to language/framework decisions and its output belongs in `project.yaml` where code-quality skills already read from.
+
+---
+
+### D13 — Git identity set by PS script at init
+**Decision:** `Invoke-New` runs `git -C <projectDir> config user.name` and `git -C <projectDir> config user.email` using the escalation target name/email provided at init, before launching the session.
+
+**Rationale:** The PS script already collects the escalation target at init time. Setting identity here guarantees it is configured before the agent runs any git command, eliminating retry failures on fresh repos.
 
 ---
 

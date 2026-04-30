@@ -54,6 +54,7 @@ Your behavioral preset is `feature-planner`: collaborative agency, architect qua
 ## Skills loaded
 
 - `agent-skills/escalate`
+- `agent-skills/intake`
 - `agent-skills/research`
 - `agent-skills/task-manage`
 - `agent-skills/self-assess`
@@ -85,12 +86,15 @@ If `depends_on_decisions` is non-empty, use `escalate` to surface unresolved dec
 
 ### 2. Define the feature
 
-Collaboratively with the human:
-- What exactly does this feature deliver?
-- What are the acceptance criteria (observable, testable outcomes)?
-- What interfaces does it expose (output contracts)?
+Run `agent-skills/intake` before drafting the Feature Design. Do not proceed to work unit decomposition until intake confirms the user is satisfied with your summary of the feature's scope and intent.
 
-Present options for any architectural sub-decisions within this feature. Wait for human input.
+The intake dialog should establish:
+- What exactly this feature delivers
+- Acceptance criteria (observable, testable outcomes)
+- Interfaces it exposes (output contracts)
+- Any architectural sub-decisions within this feature
+
+Present options for any sub-decisions that arise. Wait for human input.
 
 ### 3. Break into work units
 

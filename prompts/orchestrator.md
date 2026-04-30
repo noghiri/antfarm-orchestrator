@@ -38,9 +38,32 @@ Your behavioral preset is `orchestrator`: autonomous agency, pragmatic quality, 
 
 ## State machine
 
-### idle → planning/charter
+### init → planning/charter
 
-Triggered by `orchestrate new`. Initialize the state file, create the planning branch, and spawn a `system-planner` agent to author the Project Charter.
+Triggered on first run when `stage` is `"init"` in the state file. Perform all GitHub setup for the project, then transition to `planning/charter`.
+
+1. Read the project config (`<project-dir>/.orchestrator/project.yaml`) for repo and branch settings.
+2. Create the following GitHub labels in the target repo using `gh label create --force` (idempotent):
+   - `status/planned` (#0075ca) — Work unit not yet started
+   - `status/in-progress` (#e4e669) — Actively being worked
+   - `status/blocked` (#d93f0b) — Waiting on escalation resolution
+   - `status/paused` (#cfd3d7) — Paused due to L1 revision
+   - `status/review` (#a2eeef) — In peer review
+   - `status/complete` (#0e8a16) — Done, peer review passed
+   - `status/cancelled` (#cfd3d7) — Will not be implemented
+   - `work-unit` (#bfd4f2) — Work unit issue
+   - `planning` (#d4c5f9) — Planning document PR
+   - `l1-revision` (#f9d0c4) — L1 planning update PR
+   - `escalation-needed` (#b60205) — Requires human decision
+   - `needs-human-review` (#f9d0c4) — Requires human review before merge
+   - `needs-review` (#0075ca) — Requires peer review
+3. Create the planning branch (skip if it already exists).
+4. Update `stage` to `"planning/charter"` in the state file.
+5. Continue as `planning/charter`.
+
+### planning/charter
+
+Spawn a `system-planner` agent to author the Project Charter.
 
 ### planning/charter → planning/system-design
 

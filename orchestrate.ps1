@@ -231,16 +231,23 @@ function Invoke-New {
     Assert-Tool 'gh'     'Install from https://cli.github.com/'
     Assert-Tool 'claude' 'Install Claude Code from https://claude.ai/code'
 
-    # Resolve GitHub username
-    $ghUser = $GithubUser
+    # Resolve GitHub username and profile (name/email for git identity)
+    $ghUser     = $GithubUser
+    $ghGitName  = $GithubUser
+    $ghGitEmail = ''
     if (-not $ghUser) {
-        Write-Host 'Resolving GitHub username...'
-        $ghUser = gh api user --jq '.login' 2>&1
-        if ($LASTEXITCODE -ne 0 -or -not $ghUser) {
-            Write-Error 'Could not resolve GitHub username. Pass -GithubUser explicitly or run gh auth login.'
+        Write-Host 'Resolving GitHub user profile...'
+        $ghProfile = gh api user 2>&1
+        if ($LASTEXITCODE -ne 0 -or -not $ghProfile) {
+            Write-Error 'Could not resolve GitHub user profile. Pass -GithubUser explicitly or run gh auth login.'
             exit 1
         }
+        $ghProfileObj = $ghProfile | ConvertFrom-Json
+        $ghUser     = $ghProfileObj.login
+        $ghGitName  = if ($ghProfileObj.name)  { $ghProfileObj.name }  else { $ghUser }
+        $ghGitEmail = if ($ghProfileObj.email) { $ghProfileObj.email } else { "$ghUser@users.noreply.github.com" }
     }
+    if (-not $ghGitEmail) { $ghGitEmail = "$ghUser@users.noreply.github.com" }
 
     $repoParts = $Repo -split '/', 2
     $repoOwner = $repoParts[0]
@@ -263,19 +270,6 @@ function Invoke-New {
     $planningBranch = Read-Host 'Planning branch [planning]'
     if (-not $planningBranch) { $planningBranch = 'planning' }
 
-    $language = Read-Host 'Language (e.g. rust, python, typescript)'
-    $buildCmd = Read-Host 'Build command'
-    $testCmd  = Read-Host 'Test command'
-    $lintCmd  = Read-Host 'Lint command'
-
-    $ciEnabled  = (Read-Host 'Enable CI integration? [y/N]').Trim().ToLower() -eq 'y'
-    $ciRequired = $false
-    $ciProvider = 'none'
-    if ($ciEnabled) {
-        $ciRequired = (Read-Host 'Require CI to pass before merge? [y/N]').Trim().ToLower() -eq 'y'
-        $ciProvider = 'github-actions'
-    }
-
     $defaultEscalation = "@$ghUser"
     $escalationTarget  = Read-Host "Escalation target GitHub handle [$defaultEscalation]"
     if (-not $escalationTarget) { $escalationTarget = $defaultEscalation }
@@ -293,32 +287,14 @@ function Invoke-New {
         if ($overwrite -ne 'y') { Write-Host 'Aborted.'; exit 0 }
     }
 
-    # ── Labels ─────────────────────────────────────────────────────────────────
-    $labels = @(
-        @{ name = 'status/planned';     color = '0075ca'; desc = 'Work unit not yet started' }
-        @{ name = 'status/in-progress'; color = 'e4e669'; desc = 'Actively being worked' }
-        @{ name = 'status/blocked';     color = 'd93f0b'; desc = 'Waiting on escalation resolution' }
-        @{ name = 'status/paused';      color = 'cfd3d7'; desc = 'Paused due to L1 revision' }
-        @{ name = 'status/review';      color = 'a2eeef'; desc = 'In peer review' }
-        @{ name = 'status/complete';    color = '0e8a16'; desc = 'Done, peer review passed' }
-        @{ name = 'status/cancelled';   color = 'cfd3d7'; desc = 'Will not be implemented' }
-        @{ name = 'work-unit';          color = 'bfd4f2'; desc = 'Work unit issue' }
-        @{ name = 'planning';           color = 'd4c5f9'; desc = 'Planning document PR' }
-        @{ name = 'l1-revision';        color = 'f9d0c4'; desc = 'L1 planning update PR' }
-        @{ name = 'escalation-needed';  color = 'b60205'; desc = 'Requires human decision' }
-        @{ name = 'needs-human-review'; color = 'f9d0c4'; desc = 'Requires human review before merge' }
-        @{ name = 'needs-review';       color = '0075ca'; desc = 'Requires peer review' }
-    )
-
     # ── Dry-run preview ────────────────────────────────────────────────────────
     Show-DryRun @(
+        "Set:    git config user.name/user.email in $absProjectDir (if not already set)"
         "Create: $configFile"
         "Create: $stateFile"
         "Update: projects.json"
-        "Create $($labels.Count) GitHub labels in $Repo"
-        "Create branch '$planningBranch' in $Repo (from $baseBranch)"
         "Note:   add .orchestrator/ to $absProjectDir\.gitignore (manual step)"
-        "Launch: claude-mode orchestrator (stage: planning/charter)"
+        "Launch: orchestrator session (GitHub labels + planning branch created by agent on first run)"
     )
 
     if (-not $Execute) { return }
@@ -326,13 +302,26 @@ function Invoke-New {
     # ── Apply ──────────────────────────────────────────────────────────────────
     Write-Host 'Applying...' -ForegroundColor Green
 
+    # 0. Git identity — set in project repo if not already configured
+    if (Test-Path (Join-Path $absProjectDir '.git')) {
+        $existingName  = git -C $absProjectDir config --get user.name 2>&1
+        $nameIsSet     = ($LASTEXITCODE -eq 0) -and $existingName
+        $existingEmail = git -C $absProjectDir config --get user.email 2>&1
+        $emailIsSet    = ($LASTEXITCODE -eq 0) -and $existingEmail
+        if (-not $nameIsSet) {
+            git -C $absProjectDir config user.name $ghGitName | Out-Null
+            Write-Host "  + git config user.name = $ghGitName" -ForegroundColor Green
+        }
+        if (-not $emailIsSet) {
+            git -C $absProjectDir config user.email $ghGitEmail | Out-Null
+            Write-Host "  + git config user.email = $ghGitEmail" -ForegroundColor Green
+        }
+    }
+
     # 1. Create .orchestrator/ directory in project repo
     if (-not (Test-Path $orchestratorDir)) {
         New-Item -ItemType Directory -Path $orchestratorDir -Force | Out-Null
     }
-
-    $ciEnabledStr  = $ciEnabled.ToString().ToLower()
-    $ciRequiredStr = $ciRequired.ToString().ToLower()
 
 @"
 name: "$projectName"
@@ -345,15 +334,15 @@ github:
   planning_branch: $planningBranch
 
 ci:
-  enabled: $ciEnabledStr
-  required: $ciRequiredStr
-  provider: $ciProvider
+  enabled: false
+  required: false
+  provider: none
 
 toolchain:
-  language: "$language"
-  build: "$buildCmd"
-  test: "$testCmd"
-  lint: "$lintCmd"
+  language: null
+  build: null
+  test: null
+  lint: null
 
 orchestrator:
   escalation_target: "$escalationTarget"
@@ -375,7 +364,7 @@ orchestrator:
   "project_slug": "$Project",
   "instance_id": "$instanceId",
   "github_username": "$ghUser",
-  "stage": "planning/charter",
+  "stage": "init",
   "escalation_target": "$escalationTarget",
   "paused": false,
   "pause_reason": null,
@@ -393,43 +382,6 @@ orchestrator:
     }
     Write-Registry -Data $reg
     Write-Host "  + projects.json" -ForegroundColor Green
-
-    # 4. GitHub labels (--force makes this idempotent)
-    Write-Host "  Creating GitHub labels in $Repo..." -ForegroundColor Green
-    foreach ($label in $labels) {
-        $out = gh label create $label.name `
-            --repo $Repo `
-            --color $label.color `
-            --description $label.desc `
-            --force 2>&1
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "    + $($label.name)" -ForegroundColor Green
-        }
-        else {
-            Write-Warning "    ! $($label.name): $out"
-        }
-    }
-
-    # 5. Planning branch (idempotent — skip if already exists)
-    Write-Host "  Creating branch '$planningBranch'..." -ForegroundColor Green
-    $baseSha = gh api "repos/$Repo/git/ref/heads/$baseBranch" --jq '.object.sha' 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Warning "    ! Could not read base branch '$baseBranch': $baseSha"
-    }
-    else {
-        $branchOut = gh api "repos/$Repo/git/refs" `
-            -f "ref=refs/heads/$planningBranch" `
-            -f "sha=$baseSha" 2>&1
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "    + $planningBranch" -ForegroundColor Green
-        }
-        elseif ($branchOut -match 'Reference already exists') {
-            Write-Host "    ~ '$planningBranch' already exists, skipping" -ForegroundColor Yellow
-        }
-        else {
-            Write-Warning "    ! Could not create branch: $branchOut"
-        }
-    }
 
     Write-Host ''
     Write-Host "Project '$Project' initialized." -ForegroundColor Green

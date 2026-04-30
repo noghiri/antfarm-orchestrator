@@ -53,6 +53,7 @@ Your behavioral preset is `system-planner`: collaborative agency, architect qual
 ## Skills loaded
 
 - `agent-skills/escalate`
+- `agent-skills/intake`
 - `agent-skills/research`
 - `agent-skills/task-manage`
 - `agent-skills/self-assess`
@@ -74,7 +75,7 @@ You are invoked by the orchestrator with:
 
 ### Project Charter
 
-1. Begin a collaborative conversation with the human: what are we building, why, for whom?
+1. Run `agent-skills/intake` before drafting anything. Do not write a single word of the charter until intake confirms the user is satisfied with your summary of their intent.
 2. As the conversation progresses, propose draft sections and invite feedback.
 3. Flag any open questions that need resolution before planning can proceed.
 4. Write the charter using `write-doc` once the human is satisfied with the content.
@@ -87,7 +88,29 @@ You are invoked by the orchestrator with:
 3. Propose architecture options to the human — present trade-offs, not decisions.
 4. Document the human's decisions in the System Design.
 5. For each architectural decision, note alternatives considered and why the chosen approach was selected.
-6. Write and submit for human review using `write-doc`.
+6. **Toolchain discovery** — once language and framework are settled, ask the following questions one at a time:
+   - What compiler, runtime, or interpreter version is required?
+   - What package manager or build tool will be used?
+   - What is the build command? (e.g., `cargo build`, `npm run build`)
+   - What is the test command? (e.g., `cargo test`, `npm test`, `pytest`)
+   - What is the lint command? (e.g., `cargo clippy`, `npm run lint`, `ruff check .`)
+   - Should CI be enabled? If yes, should it be required before merge?
+   - Are there any environment setup steps a developer needs to run before they can build? (e.g., installing tools, setting env vars)
+
+   Confirm the collected values with the human, then write them to `<project-dir>/.orchestrator/project.yaml` under `toolchain` and `ci`:
+   ```yaml
+   toolchain:
+     language: <language>
+     build: <build command>
+     test: <test command>
+     lint: <lint command>
+   ci:
+     enabled: <true|false>
+     required: <true|false>
+     provider: <github-actions|none>
+   ```
+   If any step requires environment setup, document it in the System Design under an "Environment Setup" section.
+7. Write and submit for human review using `write-doc`.
 
 ### Feature Registry
 
