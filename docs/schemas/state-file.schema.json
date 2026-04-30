@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "state-file",
+  "title": "Orchestrator State File",
+  "description": "Per-project local state file tracking orchestrator position in the workflow. Stored in state/<project-slug>.json and never committed.",
+  "type": "object",
+  "required": [
+    "version", "project_slug", "instance_id", "github_username",
+    "stage", "escalation_target", "paused", "active_features"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 1
+    },
+    "project_slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "instance_id": {
+      "type": "string",
+      "description": "Unique instance identity: <github-username>/<project-slug>/<feature-slug> with / replaced by -"
+    },
+    "github_username": {
+      "type": "string"
+    },
+    "stage": {
+      "type": "string",
+      "enum": [
+        "idle",
+        "planning/charter",
+        "planning/system-design",
+        "planning/feature-registry",
+        "planning/feature-design",
+        "building",
+        "paused"
+      ]
+    },
+    "escalation_target": {
+      "type": "string"
+    },
+    "paused": {
+      "type": "boolean"
+    },
+    "pause_reason": {
+      "type": ["string", "null"]
+    },
+    "active_features": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["planned", "designing", "building", "integrating", "complete"]
+          },
+          "active_work_unit": {
+            "type": ["string", "null"]
+          },
+          "claimed_issue": {
+            "type": ["integer", "null"]
+          }
+        }
+      }
+    },
+    "l1_revision": {
+      "type": ["object", "null"],
+      "properties": {
+        "pr_number": {"type": "integer"},
+        "reason": {"type": "string"},
+        "initiated_at": {"type": "string"}
+      }
+    }
+  }
+}

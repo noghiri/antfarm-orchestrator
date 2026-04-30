@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "project_slug": "project-slug",
+  "instance_id": "github-username-project-slug",
+  "github_username": "github-username",
+  "stage": "idle",
+  "escalation_target": "@github-username",
+  "paused": false,
+  "pause_reason": null,
+  "active_features": {},
+  "l1_revision": null
+}

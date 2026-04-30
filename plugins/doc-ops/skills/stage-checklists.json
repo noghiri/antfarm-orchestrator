@@ -1,0 +1,15 @@
+{
+  "name": "stage-checklists",
+  "version": "0.1.0",
+  "description": "Per-stage completion checklists. Every stage gate must be fully checked before handing off to the next stage or closing a work unit.",
+  "capabilities": {
+    "filesystem": "read",
+    "network": false,
+    "github_push": false,
+    "shell_exec": false
+  },
+  "dependencies": [
+    "doc-ops/validate-doc",
+    "doc-ops/check-staleness"
+  ]
+}
