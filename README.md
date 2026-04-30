@@ -1,6 +1,6 @@
-# Orchestrator
+# Antfarm Orchestrator
 
-A multi-agent system for building software projects with Claude. The Orchestrator manages a team of specialized Claude agents through structured planning and building stages, using GitHub Issues as the coordination layer and requiring explicit human approval at every stage gate.
+A multi-agent system for building software projects with Claude. The Antfarm Orchestrator manages a team of specialized Claude agents through structured planning and building stages, using GitHub Issues as the coordination layer and requiring explicit human approval at every stage gate.
 
 ---
 
