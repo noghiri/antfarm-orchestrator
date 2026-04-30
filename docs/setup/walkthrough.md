@@ -12,8 +12,8 @@ This walkthrough traces a minimal project — a single-endpoint HTTP health-chec
 ## Prerequisites
 
 - `gh` authenticated with write access to the target repo
-- `claude-mode` installed (`claude-mode --version` should succeed)
-- Orchestrator repo cloned and in your PATH or invoked as `.\orchestrate.ps1`
+- `claude` CLI installed (Claude Code — `claude --version` should succeed)
+- Orchestrator repo cloned and invoked as `.\orchestrate.ps1`
 
 ---
 

@@ -64,7 +64,6 @@ Six plugin packages loaded into every session:
 - [Git](https://git-scm.com/)
 - [GitHub CLI (`gh`)](https://cli.github.com/) — authenticated with read/write access to the target repo
 - [Claude Code](https://claude.ai/code)
-- [claude-code-modes](https://github.com/nklisch/claude-code-modes) — `claude-mode` must be on PATH
 - `ANTHROPIC_API_KEY` set in your environment
 - PowerShell 7+ (`pwsh`) for the `orchestrate.ps1` entry point
 
@@ -144,3 +143,9 @@ Orchestrator/                  # This tool's directory
 - **[SETUP.md](SETUP.md)** — prerequisites, plugin installation, project initialization, CI setup
 - **[docs/setup/walkthrough.md](docs/setup/walkthrough.md)** — end-to-end example tracing a minimal project through every stage; use as a smoke-test checklist
 - **[docs/setup/decisions.md](docs/setup/decisions.md)** — architectural decisions, implementation status, and context for future sessions
+
+---
+
+## Acknowledgements
+
+The behavioral preset system — the agency/quality/scope axes and the fragment-based prompt assembly approach — is adapted from [claude-code-modes](https://github.com/nklisch/claude-code-modes) by [@nklisch](https://github.com/nklisch), licensed under the MIT License. The fragment files in `prompts/fragments/` are sourced from that project.

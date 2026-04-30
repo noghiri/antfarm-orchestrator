@@ -1,36 +1,10 @@
 {
+  "_note": "Reference only — not used at runtime. Preset axes are assembled into prompts/assembled/ at build time from prompts/fragments/. See prompts/assembled/ for the actual system prompts used by each role.",
   "presets": {
-    "orchestrator": {
-      "agency": "autonomous",
-      "quality": "pragmatic",
-      "scope": "narrow"
-    },
-    "system-planner": {
-      "agency": "collaborative",
-      "quality": "architect",
-      "scope": "unrestricted"
-    },
-    "feature-planner": {
-      "agency": "collaborative",
-      "quality": "architect",
-      "scope": "adjacent"
-    },
-    "builder": {
-      "agency": "autonomous",
-      "quality": "pragmatic",
-      "scope": "narrow"
-    },
-    "reviewer": {
-      "agency": "collaborative",
-      "quality": "architect",
-      "scope": "narrow"
-    }
-  },
-  "modifiers": {
-    "orchestrator-role":    "./prompts/orchestrator.md",
-    "system-planner-role":  "./prompts/system-planner.md",
-    "feature-planner-role": "./prompts/feature-planner.md",
-    "builder-role":         "./prompts/builder.md",
-    "reviewer-role":        "./prompts/reviewer.md"
+    "orchestrator":    { "agency": "autonomous",    "quality": "pragmatic", "scope": "narrow"       },
+    "system-planner":  { "agency": "collaborative", "quality": "architect", "scope": "unrestricted" },
+    "feature-planner": { "agency": "collaborative", "quality": "architect", "scope": "adjacent"     },
+    "builder":         { "agency": "autonomous",    "quality": "pragmatic", "scope": "narrow"       },
+    "reviewer":        { "agency": "collaborative", "quality": "architect", "scope": "narrow"       }
   }
 }

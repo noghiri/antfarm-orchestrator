@@ -104,19 +104,41 @@ function Show-DryRun([string[]]$Actions) {
 }
 
 function Start-Session([string]$ProjectSlug, [string]$AbsProjectDir, [string]$FeatureScope = '') {
-    $context = "Orchestrator startup context -- project_slug: $ProjectSlug  project_dir: $AbsProjectDir"
-    if ($FeatureScope) { $context += "  feature_scope: $FeatureScope" }
+    $startupContext = "Orchestrator startup context -- project_slug: $ProjectSlug  project_dir: $AbsProjectDir"
+    if ($FeatureScope) { $startupContext += "  feature_scope: $FeatureScope" }
 
-    # Invoke claude-mode from the Orchestrator tool root so it picks up .claude-mode.json.
-    # The project_dir in the startup context tells the orchestrator where to find its state
-    # and perform git/file operations in the target repo.
-    Push-Location $Script:Root
+    # Assemble the orchestrator system prompt from the pre-built template, substituting
+    # environment variables, then write to a temp file for --system-prompt-file.
+    $templatePath = Join-Path $Script:Root 'prompts\assembled\orchestrator.md'
+    $template     = Get-Content $templatePath -Raw -Encoding utf8
+
+    $isGit     = if (Test-Path (Join-Path $AbsProjectDir '.git')) { 'true' } else { 'false' }
+    $gitStatus = ''
+    if ($isGit -eq 'true') {
+        $gitStatus = (git -C $AbsProjectDir status --short 2>&1) -join "`n"
+        if (-not $gitStatus) { $gitStatus = 'clean' }
+    }
+
+    $prompt = $template `
+        -replace '\{\{CWD\}\}',              $AbsProjectDir `
+        -replace '\{\{IS_GIT\}\}',           $isGit `
+        -replace '\{\{PLATFORM\}\}',         'win32' `
+        -replace '\{\{SHELL\}\}',            'PowerShell' `
+        -replace '\{\{OS_VERSION\}\}',       ([System.Environment]::OSVersion.VersionString) `
+        -replace '\{\{MODEL_NAME\}\}',       'Sonnet 4.6' `
+        -replace '\{\{MODEL_ID\}\}',         'claude-sonnet-4-6' `
+        -replace '\{\{KNOWLEDGE_CUTOFF\}\}', 'August 2025' `
+        -replace '\{\{GIT_STATUS\}\}',       $gitStatus
+
+    $prompt += "`n`n$startupContext"
+
+    $tmpFile = [System.IO.Path]::GetTempFileName()
     try {
-        # TODO: verify 'context-pacing' is a built-in claude-code-modes modifier; if not, define it in .claude-mode.json or remove the flag
-        & claude-mode orchestrator --modifier orchestrator-role --modifier context-pacing --model claude-sonnet-4-6 --append-system-prompt $context
+        Set-Content $tmpFile -Value $prompt -Encoding utf8
+        & claude --system-prompt-file $tmpFile --model claude-sonnet-4-6
     }
     finally {
-        Pop-Location
+        Remove-Item $tmpFile -ErrorAction SilentlyContinue
     }
 }
 
@@ -158,7 +180,7 @@ function Invoke-Resume {
         exit 1
     }
 
-    Assert-Tool 'claude-mode' 'Install from https://github.com/nklisch/claude-code-modes'
+    Assert-Tool 'claude' 'Install Claude Code from https://claude.ai/code'
 
     $entry      = $reg.projects[$Project]
     $absDir     = $entry.dir
@@ -206,8 +228,8 @@ function Invoke-New {
         exit 1
     }
 
-    Assert-Tool 'gh'          'Install from https://cli.github.com/'
-    Assert-Tool 'claude-mode' 'Install from https://github.com/nklisch/claude-code-modes'
+    Assert-Tool 'gh'     'Install from https://cli.github.com/'
+    Assert-Tool 'claude' 'Install Claude Code from https://claude.ai/code'
 
     # Resolve GitHub username
     $ghUser = $GithubUser

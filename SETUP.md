@@ -191,7 +191,7 @@ Each instance is scoped to a single feature and will only claim work units for t
 
 ```
 Orchestrator/                  # This repo
-  .claude-mode.json            # Agent behavioral presets
+  .claude-mode.json            # Preset reference (not used at runtime — see prompts/assembled/)
   .claude/settings.json        # Hooks (task list reinforcement)
   .claude-plugin/
     marketplace.json           # Plugin marketplace manifest
