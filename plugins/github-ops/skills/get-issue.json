@@ -1,0 +1,12 @@
+{
+  "name": "get-issue",
+  "version": "0.1.0",
+  "description": "Fetch the full details of a GitHub Issue: title, body, labels, assignees, and state.",
+  "capabilities": {
+    "filesystem": "none",
+    "network": true,
+    "github_push": false,
+    "shell_exec": true
+  },
+  "dependencies": []
+}

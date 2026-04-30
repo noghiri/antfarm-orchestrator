@@ -1,0 +1,12 @@
+{
+  "name": "parse-frontmatter",
+  "version": "0.1.0",
+  "description": "Extract and parse the YAML frontmatter block from a markdown planning document.",
+  "capabilities": {
+    "filesystem": "read",
+    "network": false,
+    "github_push": false,
+    "shell_exec": false
+  },
+  "dependencies": []
+}

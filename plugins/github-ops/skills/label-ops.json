@@ -1,0 +1,12 @@
+{
+  "name": "label-ops",
+  "version": "0.1.0",
+  "description": "Add and remove labels on GitHub Issues and PRs. Supports dry-run.",
+  "capabilities": {
+    "filesystem": "none",
+    "network": true,
+    "github_push": false,
+    "shell_exec": true
+  },
+  "dependencies": []
+}

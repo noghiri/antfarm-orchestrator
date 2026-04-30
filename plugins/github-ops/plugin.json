@@ -1,0 +1,16 @@
+{
+  "name": "github-ops",
+  "version": "0.1.0",
+  "description": "GitHub API operations via the gh CLI: issues, PRs, labels, comments, and work unit claiming",
+  "skills": [
+    "create-issue",
+    "update-issue",
+    "create-pr",
+    "claim-work-unit",
+    "release-work-unit",
+    "post-comment",
+    "label-ops",
+    "get-issue",
+    "list-issues"
+  ]
+}

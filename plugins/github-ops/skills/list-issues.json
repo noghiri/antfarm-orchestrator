@@ -1,0 +1,12 @@
+{
+  "name": "list-issues",
+  "version": "0.1.0",
+  "description": "List GitHub Issues filtered by label, state, or assignee. Used to find available work units and check instance state.",
+  "capabilities": {
+    "filesystem": "none",
+    "network": true,
+    "github_push": false,
+    "shell_exec": true
+  },
+  "dependencies": []
+}

@@ -1,0 +1,15 @@
+{
+  "name": "release-work-unit",
+  "version": "0.1.0",
+  "description": "Release a claimed work unit: remove claimed-by label and unassign. Used when pausing, escalating, or completing a work unit. Supports dry-run.",
+  "capabilities": {
+    "filesystem": "none",
+    "network": true,
+    "github_push": false,
+    "shell_exec": true
+  },
+  "dependencies": [
+    "github-ops/label-ops",
+    "github-ops/update-issue"
+  ]
+}

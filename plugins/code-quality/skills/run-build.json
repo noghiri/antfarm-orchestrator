@@ -1,0 +1,12 @@
+{
+  "name": "run-build",
+  "version": "0.1.0",
+  "description": "Toolchain-agnostic build wrapper. Runs the build command from project.yaml and reports success or failure.",
+  "capabilities": {
+    "filesystem": "read",
+    "network": false,
+    "github_push": false,
+    "shell_exec": true
+  },
+  "dependencies": []
+}

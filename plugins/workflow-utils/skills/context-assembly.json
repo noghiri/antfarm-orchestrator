@@ -1,0 +1,14 @@
+{
+  "name": "context-assembly",
+  "version": "0.1.0",
+  "description": "Assemble the relevant planning documents and configuration for a given agent role and work unit. Produces the context to be included in an agent invocation.",
+  "capabilities": {
+    "filesystem": "read",
+    "network": false,
+    "github_push": false,
+    "shell_exec": false
+  },
+  "dependencies": [
+    "doc-ops/parse-frontmatter"
+  ]
+}

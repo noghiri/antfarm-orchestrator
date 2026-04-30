@@ -1,0 +1,11 @@
+{
+  "name": "doc-ops",
+  "version": "0.1.0",
+  "description": "Planning document operations: schema validation, staleness checks, frontmatter parsing, and document writing",
+  "skills": [
+    "validate-doc",
+    "check-staleness",
+    "parse-frontmatter",
+    "write-doc"
+  ]
+}

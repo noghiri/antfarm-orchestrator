@@ -1,0 +1,12 @@
+{
+  "name": "update-issue",
+  "version": "0.1.0",
+  "description": "Update a GitHub Issue: change state, body, labels, or assignee. Supports dry-run.",
+  "capabilities": {
+    "filesystem": "none",
+    "network": true,
+    "github_push": false,
+    "shell_exec": true
+  },
+  "dependencies": []
+}

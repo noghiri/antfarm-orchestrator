@@ -1,0 +1,11 @@
+{
+  "name": "code-quality",
+  "version": "0.1.0",
+  "description": "Toolchain-agnostic build, lint, test, and contract test wrappers. Reads toolchain commands from project.yaml.",
+  "skills": [
+    "run-build",
+    "run-lint",
+    "run-tests",
+    "run-contract-tests"
+  ]
+}

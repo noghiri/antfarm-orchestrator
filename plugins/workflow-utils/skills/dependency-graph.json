@@ -1,0 +1,14 @@
+{
+  "name": "dependency-graph",
+  "version": "0.1.0",
+  "description": "Build a feature dependency map from the Feature Registry. Determines which features must complete before others can begin, and identifies parallelizable work.",
+  "capabilities": {
+    "filesystem": "read",
+    "network": false,
+    "github_push": false,
+    "shell_exec": false
+  },
+  "dependencies": [
+    "doc-ops/parse-frontmatter"
+  ]
+}
