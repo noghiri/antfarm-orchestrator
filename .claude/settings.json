@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'TASK LIST REMINDER: Check your task list. Mark tasks in_progress before starting them. Mark tasks completed immediately when done. Do not batch updates.'"
+          }
+        ]
+      }
+    ]
+  }
+}

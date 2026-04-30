@@ -1,0 +1,29 @@
+{
+  "presets": {
+    "orchestrator": {
+      "agency": "autonomous",
+      "quality": "pragmatic",
+      "scope": "narrow"
+    },
+    "system-planner": {
+      "agency": "collaborative",
+      "quality": "architect",
+      "scope": "unrestricted"
+    },
+    "feature-planner": {
+      "agency": "collaborative",
+      "quality": "architect",
+      "scope": "adjacent"
+    },
+    "builder": {
+      "agency": "autonomous",
+      "quality": "pragmatic",
+      "scope": "narrow"
+    },
+    "reviewer": {
+      "agency": "collaborative",
+      "quality": "architect",
+      "scope": "narrow"
+    }
+  }
+}
