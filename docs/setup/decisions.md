@@ -52,6 +52,22 @@ Residual race (two instances incorrectly assigned the same feature): the alphabe
 
 ---
 
+### D8 — State lives in the project directory
+**Decision:** Orchestrator state (state file and project config) lives in `<project-dir>/.orchestrator/`, not in the Orchestrator tool's own directory.
+
+**Rationale:** State belongs to the project being built, not to the tool. Keeping it co-located with the project means the project's local clone is self-contained, the Orchestrator tool directory stays clean across multiple projects, and the `.orchestrator/` directory can be added to the project's `.gitignore` as one logical unit.
+
+**Implementation:**
+- `orchestrate.ps1` writes to `<project-dir>/.orchestrator/state.json` and `<project-dir>/.orchestrator/project.yaml`
+- `orchestrate new` requires `--ProjectDir <path>` (absolute path to the local project clone)
+- `projects.json` stores `{slug, dir, repo}` where `dir` is the absolute path — used to locate state on `resume`
+- `Start-Session` passes `project_dir` in the startup context string so the orchestrator agent knows where to read state
+- `orchestrate.ps1`'s `Start-Session` pushes to the Orchestrator root before invoking `claude-mode` (so `.claude-mode.json` is found), but the project dir is passed as a context variable, not the CWD
+- The Orchestrator repo's `.gitignore` no longer contains `state/` (that directory is gone)
+- Post-init output reminds the user to add `.orchestrator/` to the project's `.gitignore`
+
+---
+
 ### D7 — Context management
 **Decision:** The orchestrator is stateless with respect to conversation history. All critical state lives in durable storage: state file, project config, GitHub Issues, and planning documents (L1 + L2). Context compaction at any point is safe; `workflow-utils/context-reload` fully restores the working picture.
 
@@ -77,9 +93,10 @@ Residual race (two instances incorrectly assigned the same feature): the alphabe
 
 ### Entry point
 - **`orchestrate.ps1`** (repo root): implements `new`, `resume`, `list`
-  - `new`: interactive prompts, dry-run by default, `-Execute` to apply; creates state files, GitHub labels (idempotent with `--force`), planning branch, launches orchestrator session
-  - `resume`: validates project exists, launches session with optional `--Feature` scope
-  - `list`: reads `projects.json` and state files, prints table
+  - `new`: requires `--ProjectDir <path>`; interactive prompts, dry-run by default, `-Execute` to apply; creates `.orchestrator/` in the project dir with `state.json` and `project.yaml`; creates GitHub labels (idempotent with `--force`), planning branch; launches orchestrator session
+  - `resume`: looks up `dir` from `projects.json`, validates project exists, launches session with optional `--Feature` scope
+  - `list`: reads `projects.json` and state files from each registered `dir`, prints table
+  - State at `<project-dir>/.orchestrator/state.json`; config at `<project-dir>/.orchestrator/project.yaml`; `projects.json` stores `{slug, dir, repo}`
 - **`.claude-mode.json`**: added `modifiers` section registering all 5 role prompts (`./prompts/*.md`) for use with `--modifier <role>-role`
 
 ### Prompts
@@ -102,7 +119,7 @@ Residual race (two instances incorrectly assigned the same feature): the alphabe
 
 Once a dedicated sandbox GitHub repo is available, run the orchestrator through the full planning stage using the Ping Server example from `docs/setup/walkthrough.md`:
 
-1. `.\orchestrate.ps1 new --Project ping-server --Repo <sandbox-org>/ping-server --Execute`
+1. `.\orchestrate.ps1 new --Project ping-server --Repo <sandbox-org>/ping-server --ProjectDir <path-to-local-clone> --Execute`
 2. Full planning stage: charter → system design → feature registry → feature design
 3. Validate against the checklist table at the bottom of `docs/setup/walkthrough.md`
 

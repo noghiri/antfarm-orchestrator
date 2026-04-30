@@ -21,10 +21,10 @@ This walkthrough traces a minimal project — a single-endpoint HTTP health-chec
 
 ```powershell
 # Dry-run first to see what will be created
-.\orchestrate.ps1 new --Project ping-server --Repo your-org/ping-server
+.\orchestrate.ps1 new --Project ping-server --Repo your-org/ping-server --ProjectDir C:\Projects\ping-server
 
 # Apply
-.\orchestrate.ps1 new --Project ping-server --Repo your-org/ping-server --Execute
+.\orchestrate.ps1 new --Project ping-server --Repo your-org/ping-server --ProjectDir C:\Projects\ping-server --Execute
 ```
 
 Interactive prompts and expected answers:
@@ -41,11 +41,13 @@ Escalation target [@you]:            @your-github-username  (accept default)
 ```
 
 **What gets created:**
-- `state/projects/ping-server/project.yaml`
-- `state/ping-server.json` (stage: `planning/charter`)
-- Entry in `projects.json`
+- `C:\Projects\ping-server\.orchestrator\project.yaml`
+- `C:\Projects\ping-server\.orchestrator\state.json` (stage: `planning/charter`)
+- Entry in `projects.json` (in the Orchestrator tool directory)
 - 13 GitHub labels in `your-org/ping-server`
 - `planning` branch in `your-org/ping-server`
+
+After initialization, add `.orchestrator/` to the project's `.gitignore` (the tool reminds you).
 
 The orchestrator session starts automatically after initialization.
 

@@ -72,24 +72,26 @@ The target repository is the project you are building — the one that will cont
 
 From the orchestrator directory:
 
-```sh
+```powershell
 # Dry run first (see what would be created)
-orchestrate new --project my-project --repo github-user/my-repo --github-user github-user
+.\orchestrate.ps1 new --Project my-project --Repo github-user/my-repo --ProjectDir C:\path\to\my-repo
 
 # Apply
-orchestrate new --project my-project --repo github-user/my-repo --github-user github-user --execute
+.\orchestrate.ps1 new --Project my-project --Repo github-user/my-repo --ProjectDir C:\path\to\my-repo --Execute
 ```
 
 This will:
-- Create a project config at `state/projects/my-project/project.yaml`
-- Create a local state file at `state/my-project.json`
-- Register the project in `projects.json`
+- Create a project config at `<project-dir>\.orchestrator\project.yaml`
+- Create a local state file at `<project-dir>\.orchestrator\state.json`
+- Register the project in `projects.json` (in the Orchestrator tool directory)
 - Create all required GitHub labels in the target repo
 - Create the `planning` branch in the target repo
 
+After initialization, add `.orchestrator/` to the project's `.gitignore` so that local state is not committed to the target repo.
+
 ### 3. Edit the project config
 
-Open `state/projects/my-project/project.yaml` and fill in:
+Open `<project-dir>\.orchestrator\project.yaml` and fill in:
 
 ```yaml
 name: "My Project"
@@ -133,7 +135,7 @@ cp docs/templates/ci-workflow.yml <target-repo>/.github/workflows/ci.yml
 # Edit ci.yml: replace BUILD_COMMAND, TEST_COMMAND, LINT_COMMAND
 ```
 
-Then set in `state/projects/my-project/project.yaml`:
+Then set in `<project-dir>\.orchestrator\project.yaml`:
 ```yaml
 ci:
   enabled: true
@@ -215,9 +217,6 @@ Orchestrator/                  # This repo
     schemas/                   # JSON schemas for validation
     templates/                 # Document and config templates
   scripts/                     # orchestrate command documentation
-  state/                       # Local state (gitignored)
-    <project-slug>.json        # Per-project state file
-    projects/<slug>/           # Per-project configs
   projects.json                # Project registry (gitignored)
 ```
 

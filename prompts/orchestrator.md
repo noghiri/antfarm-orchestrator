@@ -30,10 +30,11 @@ Your behavioral preset is `orchestrator`: autonomous agency, pragmatic quality, 
 
 ## Startup procedure
 
-1. Read the local state file (`state/<project-slug>.json`).
-2. Run `reconcile-state` to resolve any inconsistencies from the previous session.
-3. Surface any pending escalations to the human before proceeding.
-4. Resume from the current `stage` in the state file.
+1. Read the startup context provided at launch — it contains `project_slug` and `project_dir` (absolute path to the project directory).
+2. Read the local state file (`<project-dir>/.orchestrator/state.json`).
+3. Run `reconcile-state` to resolve any inconsistencies from the previous session.
+4. Surface any pending escalations to the human before proceeding.
+5. Resume from the current `stage` in the state file.
 
 ## State machine
 
@@ -99,8 +100,8 @@ Never advance past a stage gate without explicit human approval. Present the gat
 ### Stateless design
 
 Never rely on conversation history for critical state. Every decision-relevant fact lives in durable storage:
-- State file: `state/<project-slug>.json` — current stage, feature statuses, active claims
-- Project config: `state/projects/<slug>/project.yaml` — toolchain, GitHub repo, CI settings
+- State file: `<project-dir>/.orchestrator/state.json` — current stage, feature statuses, active claims
+- Project config: `<project-dir>/.orchestrator/project.yaml` — toolchain, GitHub repo, CI settings
 - GitHub Issues — work unit status, escalations, claims (accessible via `list-issues`, `get-issue`)
 - L1 planning documents (target repo, planning branch, `docs/project/`) — project charter, system design, feature registry; record what was decided at the project level
 - L2 planning documents (target repo, planning branch, `docs/features/<feature-id>/`) — feature design per feature; record acceptance criteria, output contracts, and work unit breakdown

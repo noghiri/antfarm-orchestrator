@@ -18,13 +18,13 @@ Reload your complete working picture from durable state. This procedure is ident
 
 ## Reload procedure
 
-1. **Read the state file** — `state/<project-slug>.json`
+1. **Read the state file** — `<project-dir>/.orchestrator/state.json`
    - Current stage
    - Feature statuses and active claims
    - Pause state and reason (if paused)
    - L1 revision tracking (if active)
 
-2. **Read the project config** — `state/projects/<slug>/project.yaml`
+2. **Read the project config** — `<project-dir>/.orchestrator/project.yaml`
    - GitHub owner/repo
    - Toolchain (build, test, lint commands)
    - CI settings

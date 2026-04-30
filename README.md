@@ -105,30 +105,35 @@ Six plugin packages loaded into every session:
 ## Project structure
 
 ```
-Orchestrator/
-  orchestrate.ps1          # Entry point: new / resume / list
-  .claude-mode.json        # Agent behavioral presets + role prompt modifiers
-  plugins/                 # Six plugin packages (skills)
+Orchestrator/                  # This tool's directory
+  orchestrate.ps1              # Entry point: new / resume / list
+  .claude-mode.json            # Agent behavioral presets + role prompt modifiers
+  plugins/                     # Six plugin packages (skills)
     house-style/
     agent-skills/
     github-ops/
     doc-ops/
     workflow-utils/
     code-quality/
-  prompts/                 # Agent system prompts (loaded as modifiers at launch)
+  prompts/                     # Agent system prompts (loaded as modifiers at launch)
     orchestrator.md
     system-planner.md
     feature-planner.md
     builder.md
     reviewer.md
   docs/
-    schemas/               # JSON schemas for all document types and state files
-    templates/             # Document templates and CI workflow template
-    setup/                 # Setup guide, walkthrough, and decision log
-  state/                   # Local state (gitignored)
-    <project-slug>.json
-    projects/<slug>/project.yaml
-  projects.json            # Project registry (gitignored)
+    schemas/                   # JSON schemas for all document types and state files
+    templates/                 # Document templates and CI workflow template
+    setup/                     # Setup guide, walkthrough, and decision log
+  projects.json                # Project registry — maps slugs to project directories (gitignored)
+
+<your-project-dir>/            # Each project's own directory (a separate git repo)
+  .orchestrator/               # Per-project orchestrator state (add to .gitignore)
+    state.json                 # Current stage, feature statuses, active claims
+    project.yaml               # Toolchain, GitHub repo, CI settings
+  docs/
+    project/                   # L1 planning documents (on planning branch)
+    features/<feature-id>/     # L2 feature design documents (on planning branch)
 ```
 
 ---

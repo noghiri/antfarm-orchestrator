@@ -2,15 +2,16 @@
 #Requires -Version 7
 <#
 .SYNOPSIS
-    Orchestrator project management CLI.
+    Antfarm Orchestrator project management CLI.
 .DESCRIPTION
-    Manages multi-agent software projects using the Orchestrator system.
+    Manages multi-agent software projects using the Antfarm Orchestrator.
+    State is stored in <project-dir>/.orchestrator/ — inside the project repo.
 .EXAMPLE
     # Initialize a new project (dry-run by default)
-    .\orchestrate.ps1 new --Project my-app --Repo myorg/my-app
+    .\orchestrate.ps1 new --Project my-app --Repo myorg/my-app --ProjectDir C:\Projects\my-app
 
     # Apply the initialization
-    .\orchestrate.ps1 new --Project my-app --Repo myorg/my-app --Execute
+    .\orchestrate.ps1 new --Project my-app --Repo myorg/my-app --ProjectDir C:\Projects\my-app --Execute
 
     # Resume an existing project
     .\orchestrate.ps1 resume --Project my-app
@@ -33,6 +34,9 @@ param(
     [Parameter(HelpMessage = 'Target GitHub repository in owner/repo format')]
     [string]$Repo,
 
+    [Parameter(HelpMessage = 'Absolute path to the local clone of the target project repository')]
+    [string]$ProjectDir,
+
     [Parameter(HelpMessage = 'GitHub username (defaults to authenticated gh user)')]
     [string]$GithubUser,
 
@@ -48,9 +52,13 @@ $ErrorActionPreference = 'Stop'
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 
-$Script:Root      = $PSScriptRoot
-$Script:StateDir  = Join-Path $Root 'state'
-$Script:Registry  = Join-Path $Root 'projects.json'
+$Script:Root     = $PSScriptRoot          # Antfarm Orchestrator tool directory
+$Script:Registry = Join-Path $Root 'projects.json'
+
+# State lives inside the project: <project-dir>/.orchestrator/
+$Script:OrchestratorSubdir = '.orchestrator'
+$Script:StateFileName      = 'state.json'
+$Script:ConfigFileName     = 'project.yaml'
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -59,6 +67,18 @@ function Assert-Tool([string]$Name, [string]$Hint) {
         Write-Error "$Name not found on PATH. $Hint"
         exit 1
     }
+}
+
+function Get-ProjectStateDir([string]$Dir) {
+    Join-Path $Dir $Script:OrchestratorSubdir
+}
+
+function Get-StateFile([string]$Dir) {
+    Join-Path (Get-ProjectStateDir $Dir) $Script:StateFileName
+}
+
+function Get-ConfigFile([string]$Dir) {
+    Join-Path (Get-ProjectStateDir $Dir) $Script:ConfigFileName
 }
 
 function Read-Registry {
@@ -83,11 +103,13 @@ function Show-DryRun([string[]]$Actions) {
     Write-Host ''
 }
 
-function Start-Session([string]$ProjectSlug, [string]$StateRelPath, [string]$FeatureScope = '') {
-    $context = "Orchestrator startup context -- project_slug: $ProjectSlug  state_file: $StateRelPath"
+function Start-Session([string]$ProjectSlug, [string]$AbsProjectDir, [string]$FeatureScope = '') {
+    $context = "Orchestrator startup context -- project_slug: $ProjectSlug  project_dir: $AbsProjectDir"
     if ($FeatureScope) { $context += "  feature_scope: $FeatureScope" }
 
-    # Run claude-mode from the Orchestrator root so it picks up .claude-mode.json
+    # Invoke claude-mode from the Orchestrator tool root so it picks up .claude-mode.json.
+    # The project_dir in the startup context tells the orchestrator where to find its state
+    # and perform git/file operations in the target repo.
     Push-Location $Script:Root
     try {
         & claude-mode orchestrator --modifier orchestrator-role --modifier context-pacing --append-system-prompt $context
@@ -112,7 +134,7 @@ function Invoke-List {
 
     foreach ($slug in ($reg.projects.Keys | Sort-Object)) {
         $entry     = $reg.projects[$slug]
-        $stateFile = Join-Path $Script:Root $entry.state
+        $stateFile = Get-StateFile $entry.dir
         if (Test-Path $stateFile) {
             $s      = Get-Content $stateFile -Raw | ConvertFrom-Json
             $paused = if ($s.paused) { 'yes' } else { 'no' }
@@ -135,28 +157,30 @@ function Invoke-Resume {
         exit 1
     }
 
-    $entry      = $reg.projects[$Project]
-    $statePath  = Join-Path $Script:Root $entry.state
-    $configPath = Join-Path $Script:Root $entry.config
-
-    if (-not (Test-Path $statePath)) {
-        Write-Error "State file missing: $statePath"
-        exit 1
-    }
-    if (-not (Test-Path $configPath)) {
-        Write-Error "Config file missing: $configPath"
-        exit 1
-    }
-
     Assert-Tool 'claude-mode' 'Install from https://github.com/nklisch/claude-code-modes'
 
-    $s = Get-Content $statePath -Raw | ConvertFrom-Json
+    $entry      = $reg.projects[$Project]
+    $absDir     = $entry.dir
+    $stateFile  = Get-StateFile $absDir
+    $configFile = Get-ConfigFile $absDir
+
+    if (-not (Test-Path $stateFile)) {
+        Write-Error "State file missing: $stateFile"
+        exit 1
+    }
+    if (-not (Test-Path $configFile)) {
+        Write-Error "Config file missing: $configFile"
+        exit 1
+    }
+
+    $s = Get-Content $stateFile -Raw | ConvertFrom-Json
     Write-Host ''
     Write-Host "Resuming '$Project' at stage: $($s.stage)" -ForegroundColor Green
+    Write-Host "  Project dir: $absDir" -ForegroundColor DarkGray
     if ($Feature) { Write-Host "  Feature scope: $Feature" -ForegroundColor Green }
     Write-Host ''
 
-    Start-Session -ProjectSlug $Project -StateRelPath $entry.state -FeatureScope $Feature
+    Start-Session -ProjectSlug $Project -AbsProjectDir $absDir -FeatureScope $Feature
 }
 
 # ── new ───────────────────────────────────────────────────────────────────────
@@ -171,6 +195,13 @@ function Invoke-New {
     if (-not $Repo) { Write-Error '-Repo is required (format: owner/repo).'; exit 1 }
     if ($Repo -notmatch '^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$') {
         Write-Error "-Repo must be in owner/repo format. Got: '$Repo'"
+        exit 1
+    }
+    if (-not $ProjectDir) { Write-Error '-ProjectDir is required — provide the path to the local clone of the target repository.'; exit 1 }
+
+    $absProjectDir = (Resolve-Path $ProjectDir -ErrorAction SilentlyContinue)?.Path
+    if (-not $absProjectDir) {
+        Write-Error "-ProjectDir '$ProjectDir' does not exist. Clone the target repository first."
         exit 1
     }
 
@@ -195,6 +226,7 @@ function Invoke-New {
     # ── Interactive prompts ────────────────────────────────────────────────────
     Write-Host ''
     Write-Host "New project: $Project  ($Repo)" -ForegroundColor Green
+    Write-Host "  Project dir: $absProjectDir" -ForegroundColor DarkGray
     Write-Host 'Press Enter to accept defaults shown in [brackets].' -ForegroundColor DarkGray
     Write-Host ''
 
@@ -227,11 +259,9 @@ function Invoke-New {
     if ($escalationTarget -notmatch '^@') { $escalationTarget = "@$escalationTarget" }
 
     # ── Derived paths ──────────────────────────────────────────────────────────
-    $configDir     = Join-Path $Script:StateDir "projects/$Project"
-    $configFile    = Join-Path $configDir 'project.yaml'
-    $stateFile     = Join-Path $Script:StateDir "$Project.json"
-    $relConfigPath = "state/projects/$Project/project.yaml"
-    $relStatePath  = "state/$Project.json"
+    $orchestratorDir = Get-ProjectStateDir $absProjectDir
+    $configFile      = Get-ConfigFile $absProjectDir
+    $stateFile       = Get-StateFile $absProjectDir
 
     # Check for existing project
     $reg = Read-Registry
@@ -264,6 +294,7 @@ function Invoke-New {
         "Update: projects.json"
         "Create $($labels.Count) GitHub labels in $Repo"
         "Create branch '$planningBranch' in $Repo (from $baseBranch)"
+        "Note:   add .orchestrator/ to $absProjectDir\.gitignore (manual step)"
         "Launch: claude-mode orchestrator (stage: planning/charter)"
     )
 
@@ -272,9 +303,9 @@ function Invoke-New {
     # ── Apply ──────────────────────────────────────────────────────────────────
     Write-Host 'Applying...' -ForegroundColor Green
 
-    # 1. Project config
-    if (-not (Test-Path $configDir)) {
-        New-Item -ItemType Directory -Path $configDir -Force | Out-Null
+    # 1. Create .orchestrator/ directory in project repo
+    if (-not (Test-Path $orchestratorDir)) {
+        New-Item -ItemType Directory -Path $orchestratorDir -Force | Out-Null
     }
 
     $ciEnabledStr  = $ciEnabled.ToString().ToLower()
@@ -331,12 +362,11 @@ orchestrator:
 "@ | Set-Content $stateFile -Encoding utf8
     Write-Host "  + $stateFile" -ForegroundColor Green
 
-    # 3. Register project
+    # 3. Register project (store absolute project dir)
     $reg.projects[$Project] = @{
-        slug   = $Project
-        config = $relConfigPath
-        state  = $relStatePath
-        repo   = $Repo
+        slug = $Project
+        dir  = $absProjectDir
+        repo = $Repo
     }
     Write-Registry -Data $reg
     Write-Host "  + projects.json" -ForegroundColor Green
@@ -380,11 +410,16 @@ orchestrator:
 
     Write-Host ''
     Write-Host "Project '$Project' initialized." -ForegroundColor Green
+    Write-Host ''
+    Write-Host 'IMPORTANT: add .orchestrator/ to your project .gitignore to prevent' -ForegroundColor Yellow
+    Write-Host "           committing local runtime state:" -ForegroundColor Yellow
+    Write-Host "           echo '.orchestrator/' >> $absProjectDir\.gitignore" -ForegroundColor Yellow
+    Write-Host ''
     Write-Host 'Starting orchestrator session...' -ForegroundColor Green
     Write-Host ''
 
     # 6. Launch orchestrator
-    Start-Session -ProjectSlug $Project -StateRelPath $relStatePath
+    Start-Session -ProjectSlug $Project -AbsProjectDir $absProjectDir
 }
 
 # ── Dispatch ───────────────────────────────────────────────────────────────────
