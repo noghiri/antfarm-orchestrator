@@ -1,0 +1,12 @@
+{
+  "name": "rust-guide",
+  "version": "0.1.0",
+  "description": "Rust language guide: error handling with Result/anyhow/thiserror, ownership discipline, async with tokio, naming conventions, Clippy compliance",
+  "capabilities": {
+    "filesystem": "none",
+    "network": false,
+    "github_push": false,
+    "shell_exec": false
+  },
+  "dependencies": []
+}

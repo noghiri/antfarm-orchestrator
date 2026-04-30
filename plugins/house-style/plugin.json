@@ -1,0 +1,12 @@
+{
+  "name": "house-style",
+  "version": "0.1.0",
+  "description": "Coding standards, patterns, and language guides for all agents. Influenced by ed3d-plugins (CC BY-SA 4.0).",
+  "skills": [
+    "coding-principles",
+    "defense-in-depth",
+    "dry-run",
+    "rust-guide",
+    "task-list"
+  ]
+}

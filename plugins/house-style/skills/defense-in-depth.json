@@ -1,0 +1,12 @@
+{
+  "name": "defense-in-depth",
+  "version": "0.1.0",
+  "description": "Security and defensive coding practices: input validation, injection prevention, least privilege, secrets handling, fail-closed defaults",
+  "capabilities": {
+    "filesystem": "none",
+    "network": false,
+    "github_push": false,
+    "shell_exec": false
+  },
+  "dependencies": []
+}
