@@ -19,15 +19,31 @@ Contract tests must:
 - Fail initially (because the implementation does not yet exist)
 - Pass when the feature is correctly implemented
 
-## Running contract tests
+## Contract test location and naming convention
 
-Contract tests are tagged with a marker or placed in a dedicated location, depending on the toolchain:
+Contract tests are identified by a consistent naming convention that allows them to be run in isolation from the full test suite. The convention varies by toolchain:
 
-- **Rust**: `#[cfg(test)]` module with a `// contract-test` comment; run with `cargo test contract`
-- **Node/Jest**: files named `*.contract.test.ts`; run with `jest --testPathPattern="contract"`
-- **Python**: files named `test_contract_*.py`; run with `pytest -m contract`
+| Toolchain | File location | Function/test name | Run command |
+|-----------|---------------|--------------------|-------------|
+| **Rust** | `tests/contracts/` directory (integration tests) | Functions prefixed `contract_` | `cargo test contract_` |
+| **Node/Jest** | Same directory as source, named `*.contract.test.ts` | Any name | `jest --testPathPattern="contract"` |
+| **Python** | `tests/` directory, files named `test_contract_*.py` | Functions prefixed `test_contract_` | `pytest -m contract` (mark with `@pytest.mark.contract`) |
+| **Go** | Same package as the code under test, files named `*_contract_test.go` | Functions prefixed `TestContract` | `go test -run TestContract ./...` |
 
-Read the Feature Design's **Contract Tests** section to identify which tests to run. If the tests are not yet tagged, identify them by name from the Feature Design and run them explicitly.
+**Rust note**: Place contract tests under `tests/contracts/<feature-id>.rs` (integration test directory, not `src/`). Use the `contract_` function name prefix so `cargo test contract_` runs only them. Example:
+```rust
+// tests/contracts/f001.rs
+#[test]
+fn contract_health_returns_200() { /* ... */ }
+```
+
+**Python note**: Annotate each contract test function with `@pytest.mark.contract` and register the marker in `pyproject.toml` or `pytest.ini`:
+```ini
+[pytest]
+markers = contract: contract tests for feature output interfaces
+```
+
+Read the Feature Design's **Contract Tests** section to identify which tests to write and run. The test names in the Feature Design must match the actual function names in the stubs.
 
 ## Output
 

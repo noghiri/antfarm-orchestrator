@@ -123,7 +123,27 @@ orchestrator:
     - code-quality
 ```
 
-### 4. Start the orchestrator
+### 4. (Optional) Enable CI
+
+If you want the orchestrator to enforce CI at each Work Unit Completion Gate, copy the workflow template to your target repository and fill in your toolchain commands:
+
+```sh
+mkdir -p <target-repo>/.github/workflows
+cp docs/templates/ci-workflow.yml <target-repo>/.github/workflows/ci.yml
+# Edit ci.yml: replace BUILD_COMMAND, TEST_COMMAND, LINT_COMMAND
+```
+
+Then set in `state/projects/my-project/project.yaml`:
+```yaml
+ci:
+  enabled: true
+  required: true
+  provider: github-actions
+```
+
+The orchestrator's `check-ci` skill queries `gh run list --branch <branch>` to verify CI before merging each work unit.
+
+### 5. Start the orchestrator
 
 ```sh
 orchestrate resume --project my-project

@@ -25,5 +25,12 @@
       "quality": "architect",
       "scope": "narrow"
     }
+  },
+  "modifiers": {
+    "orchestrator-role":    "./prompts/orchestrator.md",
+    "system-planner-role":  "./prompts/system-planner.md",
+    "feature-planner-role": "./prompts/feature-planner.md",
+    "builder-role":         "./prompts/builder.md",
+    "reviewer-role":        "./prompts/reviewer.md"
   }
 }

@@ -36,12 +36,32 @@ Before spawning a sub-agent, assemble its context using `workflow-utils/context-
 
 ## Invocation
 
-Spawn the sub-agent with:
-1. The selected preset applied (via `--mode` or equivalent)
-2. The assembled context included
-3. The work unit GitHub Issue number in the prompt
-4. The instance identity set in the session config
+Spawn the sub-agent using the Claude Code `Agent` tool with `subagent_type: "general-purpose"`. The `prompt` argument is the assembled context returned by `workflow-utils/context-assembly` — it already contains the role's behavioral preset instructions, all relevant documents, and the skills list, so no additional wrapping is needed.
+
+The assembled context must be the entire `prompt` value. Do not summarize or paraphrase it; pass it in full so the sub-agent has the complete spec.
+
+Example structure of the `prompt` value (assembled by `context-assembly`):
+```
+[Behavioral preset]
+You are a builder agent. Act autonomously...
+
+[Loaded skills]
+<content of each required SKILL.md>
+
+[Project config]
+<contents of project.yaml>
+
+[Documents]
+<contents of each required planning document>
+
+[Work unit]
+Issue #42: ...
+```
 
 ## After invocation
 
-Monitor the sub-agent's output for escalation signals. If the sub-agent surfaces an escalation, route it to the human before proceeding.
+The `Agent` tool returns the sub-agent's complete output when it finishes. Read it for:
+- An explicit escalation signal (look for the phrase "ESCALATION:" or a call to `agent-skills/escalate`)
+- A completion signal ("work unit complete", "review complete", etc.)
+
+If an escalation is present, route it to the human via `agent-skills/escalate` before spawning the next sub-agent.

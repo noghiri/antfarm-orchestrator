@@ -22,23 +22,30 @@ The feature-slug component scopes this instance to one feature. **Instances shou
 
 ## Feature scoping
 
-Each instance should be started with a specific feature assignment:
+Each instance must be started with a specific feature assignment:
 - `orchestrate resume --project <slug> --feature F001`
 
-An instance scoped to F001 should only claim work units for F001. If F001 is complete and F002 is now ready (its dependency on F001 is satisfied), a new instance should be started for F002, or the F001 instance can be re-scoped with human approval.
+**Feature-boundary claiming is the primary exclusion mechanism.** Each instance claims all work units for its assigned feature and works through them sequentially. Other instances never touch work units belonging to a feature they are not assigned to. This prevents the work-unit-level race conditions that would arise if instances competed for individual issues.
+
+The feature scope is enforced by `claim-work-unit`: before claiming any issue, the skill verifies that the issue carries the correct `feature/<feature-id>` label for this instance's assigned feature. If it does not, the claim is skipped regardless of availability.
+
+If a feature is complete and F002 is now ready, a new instance should be started for F002, or the existing instance can be re-scoped with human approval.
+
+**Starting two instances scoped to the same feature is a configuration error.** The `orchestrate resume --feature <id>` command should be invoked at most once per feature at a time. If it happens accidentally, the claim-race resolution below applies, but prevention is preferred.
 
 ## Claim races
 
-Work unit claiming uses GitHub Issue labels as a distributed mutex. The claiming protocol (`claim-work-unit`) is:
-1. Check that no `claimed-by/*` label exists
-2. Add `claimed-by/<instance-id>` label
-3. Re-read the issue to confirm the label is present
+Feature-boundary claiming makes races rare (two instances would have to be incorrectly assigned the same feature simultaneously). The residual race protocol:
 
-If two instances claim the same issue simultaneously, both will add their `claimed-by/*` labels. The correct behavior after a race:
-- Both instances re-read the issue
-- If multiple `claimed-by/*` labels are present, this is a race condition
-- The instance whose label appears **first alphabetically** yields: it removes its own `claimed-by/*` label and picks a different work unit
+Work unit claiming uses GitHub Issue labels as a distributed mutex:
+1. Check that no `claimed-by/*` label exists on the issue
+2. Add `claimed-by/<instance-id>` label
+3. Re-read the issue to confirm only this instance's label is present
+
+If two instances somehow claim the same issue simultaneously (both labels present):
+- The instance whose label appears **first alphabetically** yields: remove its own `claimed-by/*` label and pick a different work unit
 - The other instance proceeds
+- Surface the race as a warning to the human
 
 ## Cross-instance communication
 

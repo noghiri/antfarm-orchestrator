@@ -1,0 +1,109 @@
+# CI Workflow Template for Orchestrator-managed projects
+#
+# SETUP INSTRUCTIONS
+# ──────────────────
+# 1. Copy this file to .github/workflows/ci.yml in your TARGET repository
+#    (not in the Orchestrator repo).
+#
+# 2. Replace the three placeholder commands under each step:
+#    - BUILD_COMMAND  → your project.yaml toolchain.build value
+#    - TEST_COMMAND   → your project.yaml toolchain.test value
+#    - LINT_COMMAND   → your project.yaml toolchain.lint value
+#
+# 3. If your language needs a setup step (e.g. rust toolchain, node version,
+#    python venv), add it before the build step. Examples are commented below.
+#
+# 4. In project.yaml set:
+#      ci:
+#        enabled: true
+#        required: true
+#        provider: github-actions
+#
+# The Orchestrator's check-ci skill queries:
+#   gh run list --branch <branch> --limit 1 --json status,conclusion,url
+# This workflow must trigger on push to feature branches so that query
+# returns a result at the Work Unit Completion Gate.
+#
+# ──────────────────────────────────────────────────────────────────────────────
+
+name: CI
+
+on:
+  push:
+    branches:
+      - 'feature/**'   # builder work unit branches
+      - planning        # planning document PRs
+      - main
+  pull_request:
+    branches:
+      - main
+      - planning
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── Language setup (uncomment the block for your language) ──────────────
+
+      # Rust
+      # - uses: dtolnay/rust-toolchain@stable
+
+      # Node.js
+      # - uses: actions/setup-node@v4
+      #   with:
+      #     node-version: '20'
+      #     cache: 'npm'
+      # - run: npm ci
+
+      # Python
+      # - uses: actions/setup-python@v5
+      #   with:
+      #     python-version: '3.12'
+      # - run: pip install -r requirements.txt
+
+      # Go
+      # - uses: actions/setup-go@v5
+      #   with:
+      #     go-version: 'stable'
+
+      # ── Build ────────────────────────────────────────────────────────────────
+      - name: Build
+        run: BUILD_COMMAND   # replace with toolchain.build from project.yaml
+                             # e.g. cargo build --release
+                             #      npm run build
+                             #      go build ./...
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      # (repeat language setup steps from the build job above)
+
+      - name: Test
+        run: TEST_COMMAND    # replace with toolchain.test from project.yaml
+                             # e.g. cargo test
+                             #      npm test
+                             #      go test ./...
+                             #      pytest
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      # (repeat language setup steps from the build job above)
+
+      - name: Lint
+        run: LINT_COMMAND    # replace with toolchain.lint from project.yaml
+                             # e.g. cargo clippy -- -D warnings
+                             #      npm run lint
+                             #      golangci-lint run
+                             #      ruff check .

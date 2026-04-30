@@ -42,13 +42,30 @@ Assemble the relevant documents and configuration for a given agent role and sta
 - Local state file
 - Loaded skills: agent-skills (all), github-ops (all), doc-ops (validate-doc, check-staleness), workflow-utils (all)
 
+## Behavioral preset instructions
+
+Sub-agents spawned via the `Agent` tool inherit the orchestrator's system prompt, not their own `claude-mode` preset. Embed these directives as the first section of every assembled context so the sub-agent knows its behavioral role.
+
+**system-planner:**
+> You are a system-planner agent collaborating with the human to author planning documents. Ask questions, present options, and seek explicit approval before finalizing any document. Apply architect-level quality standards: the design must be complete, internally consistent, and free of ambiguities. Your scope is unrestricted — you may reference any part of the project. Never finalize a document without explicit human approval.
+
+**feature-planner:**
+> You are a feature-planner agent collaborating with the human to author a feature design document and break the feature into work units. Apply architect-level quality standards. Your scope is this feature and its direct dependencies — do not redesign the overall system. Seek human approval before finalizing the document.
+
+**builder:**
+> You are a builder agent implementing a single work unit. Act autonomously — do not ask permission for implementation decisions that fall within the work unit spec. Apply pragmatic quality standards: working, tested code is the goal. Stay strictly within narrow scope: only change files required by this work unit. Do not refactor surrounding code or expand scope beyond what the spec requires.
+
+**reviewer:**
+> You are a reviewer agent adversarially reviewing a completed work unit. Your job is to find problems, not to rubber-stamp. Apply architect-level quality standards: check correctness, security, house style, and spec compliance. Stay within narrow scope: review only the changes in this work unit's branch. If you find issues requiring human judgment, surface them as escalations.
+
 ## Assembly procedure
 
 1. Identify the agent role and current stage from the local state file.
-2. Load the documents listed for that role. Skip any that do not yet exist (planning stages create them).
-3. For feature-specific context, identify the feature ID and load only that feature's documents.
-4. Construct the skills list by reading the installed plugin skills and loading the specified skill manifests.
-5. Return the assembled context as a structured list of file paths and skill names.
+2. Write the behavioral preset instructions for the target role (from the section above) as the first block of the assembled context.
+3. Load the documents listed for that role. Skip any that do not yet exist (planning stages create them).
+4. For feature-specific context, identify the feature ID and load only that feature's documents.
+5. Construct the skills list by reading the installed plugin skills and loading the specified skill manifests as inline content (not just names — include the full SKILL.md text so the sub-agent can follow them).
+6. Return the assembled context as a single structured prompt string, ordered: behavioral preset → skills → project config → documents → work unit spec.
 
 ## Context size management
 

@@ -66,10 +66,17 @@ For each work unit, define:
 
 ### 4. Author contract tests
 
-Before the Feature Design is finalized, write the contract test stubs:
-- One test per contract in the Output Contracts section
-- Tests should be failing stubs (the implementation does not exist yet)
-- Commit the test files to the feature branch
+Before the Feature Design is finalized, write the contract test stubs and commit them to the feature branch. Follow the naming and location conventions from `code-quality/run-contract-tests`:
+
+- **Rust**: `tests/contracts/<feature-id>.rs`, functions prefixed `contract_`
+- **Node/Jest**: `*.contract.test.ts` alongside source
+- **Python**: `tests/test_contract_<feature-id>.py`, functions prefixed `test_contract_`, marked `@pytest.mark.contract`
+- **Go**: `*_contract_test.go` in package, functions prefixed `TestContract`
+
+Each stub must:
+- Have the correct name (matching the Feature Design's Contract Tests section exactly)
+- Fail immediately (the implementation does not exist yet — a stub body of `assert!(false)` / `throw new Error(...)` / `assert False` / `t.Fatal(...)` is correct)
+- Be committed to the feature branch before the Feature Design is approved
 
 ### 5. Human review
 

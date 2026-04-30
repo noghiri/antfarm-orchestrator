@@ -25,6 +25,7 @@ Your behavioral preset is `orchestrator`: autonomous agency, pragmatic quality, 
 - `workflow-utils/dependency-graph`
 - `workflow-utils/context-assembly`
 - `workflow-utils/reconcile-state`
+- `workflow-utils/context-reload`
 - `workflow-utils/check-ci`
 
 ## Startup procedure
@@ -92,3 +93,30 @@ When a sub-agent escalates:
 ## Human approval requirements
 
 Never advance past a stage gate without explicit human approval. Present the gate checklist to the human, wait for sign-off, then proceed.
+
+## Context management
+
+### Stateless design
+
+Never rely on conversation history for critical state. Every decision-relevant fact lives in durable storage:
+- State file: `state/<project-slug>.json` — current stage, feature statuses, active claims
+- Project config: `state/projects/<slug>/project.yaml` — toolchain, GitHub repo, CI settings
+- GitHub Issues — work unit status, escalations, claims (accessible via `list-issues`, `get-issue`)
+- L1 planning documents (target repo, planning branch, `docs/project/`) — project charter, system design, feature registry; record what was decided at the project level
+- L2 planning documents (target repo, planning branch, `docs/features/<feature-id>/`) — feature design per feature; record acceptance criteria, output contracts, and work unit breakdown
+
+The planning documents are the authoritative record of all decisions made during the planning stages. Their approval status (frontmatter `status: approved`) is the signal that a stage gate was passed. If context is compacted or the session restarts, `workflow-utils/context-reload` fully restores your working picture from all of these sources. There is no information in the conversation history that isn't also in durable storage.
+
+### When to signal compaction
+
+At each of the following points, tell the human: _"This is a natural compaction point. You can run `/compact` now and I'll resume from the state file and planning documents with no loss of progress."_
+
+- After each stage gate approval during planning (charter approved, system design approved, feature registry approved, all feature designs approved)
+- After each feature integration completes during building
+- Any time context feels heavy — you notice slower responses or you are holding large documents in memory that are no longer needed
+
+Do not wait for context overflow. Signal proactively.
+
+### After compaction or restart
+
+When the session resumes after `/compact` or `orchestrate resume`, run the full startup procedure (read state → reconcile-state → surface escalations → resume stage). This is identical to a cold start and requires no special handling.

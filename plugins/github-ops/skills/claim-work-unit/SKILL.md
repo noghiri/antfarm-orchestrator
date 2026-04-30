@@ -11,14 +11,15 @@ Claim a work unit GitHub Issue for this instance, preventing other instances fro
 
 ## Claiming protocol
 
-1. Read the issue to verify it is in `status/planned` state and has no `claimed-by/*` label.
-2. If already claimed by another instance, do not claim — skip to the next available work unit.
-3. If unclaimed, perform the claim atomically:
-   - Add label `claimed-by/<instance-id>` (e.g., `claimed-by/alice-myproject-feature`)
+1. **Verify feature scope.** Check that the issue carries the `feature/<feature-id>` label matching this instance's assigned feature (from the `--feature` flag at startup). If the label does not match, do not claim — this work unit belongs to a different instance's scope.
+2. Read the issue to verify it is in `status/planned` state and has no `claimed-by/*` label.
+3. If already claimed by another instance, do not claim — skip to the next available work unit within this feature.
+4. If unclaimed and in scope, perform the claim:
+   - Add label `claimed-by/<instance-id>` (e.g., `claimed-by/alice-myproject-f001`)
    - Add label `status/in-progress`
    - Remove label `status/planned`
    - Assign to the instance GitHub username
-4. After claiming, re-read the issue to confirm the labels are present. If another instance also claimed it simultaneously (race condition), the last writer wins on labels but the issue body will show both assignments. In this case, release and pick a different work unit.
+5. After claiming, re-read the issue to confirm only this instance's `claimed-by/*` label is present. If multiple `claimed-by/*` labels are present (race condition), follow the race resolution protocol in `workflow-utils/multi-instance`.
 
 ## Instance ID format
 
