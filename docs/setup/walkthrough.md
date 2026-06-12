@@ -29,27 +29,33 @@ This walkthrough traces a minimal project — a single-endpoint HTTP health-chec
 
 Interactive prompts and expected answers:
 ```
-Display name [Ping Server]:          Ping Server          (accept default)
-Base branch [main]:                  main                 (accept default)
-Planning branch [planning]:          planning             (accept default)
-Language:                            rust
-Build command:                       cargo build
-Test command:                        cargo test
-Lint command:                        cargo clippy -- -D warnings
-Enable CI integration? [y/N]:        N
+Display name [Ping Server]:          Ping Server            (accept default)
+Base branch [main]:                  main                   (accept default)
+Planning branch [planning]:          planning               (accept default)
 Escalation target [@you]:            @your-github-username  (accept default)
 ```
 
-**What gets created:**
+After initialization, open `C:\Projects\ping-server\.orchestrator\project.yaml` and fill in the `toolchain` section with the ping-server values:
+```yaml
+toolchain:
+  language: rust
+  build: cargo build
+  test: cargo test
+  lint: cargo clippy -- -D warnings
+```
+
+**What gets created by `orchestrate new`:**
 - `C:\Projects\ping-server\.orchestrator\project.yaml`
-- `C:\Projects\ping-server\.orchestrator\state.json` (stage: `planning/charter`)
+- `C:\Projects\ping-server\.orchestrator\state.json` (stage: `init`)
 - Entry in `projects.json` (in the Orchestrator tool directory)
+
+**What gets created on first session start (by the orchestrator agent):**
 - 13 GitHub labels in `your-org/ping-server`
 - `planning` branch in `your-org/ping-server`
 
 After initialization, add `.orchestrator/` to the project's `.gitignore` (the tool reminds you).
 
-The orchestrator session starts automatically after initialization.
+The orchestrator session starts automatically after initialization and transitions stage to `planning/charter`.
 
 ---
 

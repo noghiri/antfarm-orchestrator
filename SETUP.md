@@ -82,10 +82,9 @@ From the orchestrator directory:
 
 This will:
 - Create a project config at `<project-dir>\.orchestrator\project.yaml`
-- Create a local state file at `<project-dir>\.orchestrator\state.json`
+- Create a local state file at `<project-dir>\.orchestrator\state.json` (stage: `init`)
 - Register the project in `projects.json` (in the Orchestrator tool directory)
-- Create all required GitHub labels in the target repo
-- Create the `planning` branch in the target repo
+- Launch an orchestrator session, which creates GitHub labels and the `planning` branch on first run
 
 After initialization, add `.orchestrator/` to the project's `.gitignore` so that local state is not committed to the target repo.
 

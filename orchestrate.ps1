@@ -24,9 +24,8 @@
 #>
 
 param(
-    [Parameter(Position = 0, Mandatory)]
-    [ValidateSet('new', 'resume', 'list')]
-    [string]$Command,
+    [Parameter(Position = 0)]
+    [string]$Command = '',
 
     [Parameter(HelpMessage = 'Project slug — lowercase alphanumeric with hyphens')]
     [string]$Project,
@@ -75,6 +74,25 @@ function Get-ProjectStateDir([string]$Dir) {
 
 function Get-StateFile([string]$Dir) {
     Join-Path (Get-ProjectStateDir $Dir) $Script:StateFileName
+}
+
+function Show-Usage {
+    Write-Host ''
+    Write-Host 'Antfarm Orchestrator' -ForegroundColor Cyan
+    Write-Host ''
+    Write-Host 'USAGE' -ForegroundColor White
+    Write-Host '  .\orchestrate.ps1 <command> [options]'
+    Write-Host ''
+    Write-Host 'COMMANDS' -ForegroundColor White
+    Write-Host '  new     Initialize a new project'
+    Write-Host '  resume  Resume an existing project session'
+    Write-Host '  list    List all registered projects'
+    Write-Host ''
+    Write-Host 'GETTING STARTED' -ForegroundColor White
+    Write-Host '  .\orchestrate.ps1 new -Project my-app -Repo owner/my-app -ProjectDir C:\Projects\my-app'
+    Write-Host ''
+    Write-Host "Run '.\orchestrate.ps1 new --help' or '.\orchestrate.ps1 resume --help' for per-command options." -ForegroundColor DarkGray
+    Write-Host ''
 }
 
 function Get-ConfigFile([string]$Dir) {
@@ -148,6 +166,7 @@ function Invoke-List {
     $reg = Read-Registry
     if ($reg.projects.Count -eq 0) {
         Write-Host 'No projects registered.' -ForegroundColor Yellow
+        Write-Host "  Start one with: .\orchestrate.ps1 new -Project my-app -Repo owner/my-app -ProjectDir C:\Projects\my-app" -ForegroundColor DarkGray
         return
     }
 
@@ -403,4 +422,6 @@ switch ($Command) {
     'new'    { Invoke-New }
     'resume' { Invoke-Resume }
     'list'   { Invoke-List }
+    ''       { Show-Usage }
+    default  { Write-Host "Unknown command: '$Command'" -ForegroundColor Red; Show-Usage; exit 1 }
 }
