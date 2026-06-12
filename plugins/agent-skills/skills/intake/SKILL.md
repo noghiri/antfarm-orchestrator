@@ -33,12 +33,22 @@ Introduce yourself and state what you are about to do:
 Ask questions iteratively. Use the target document to guide what you need to know:
 
 **For a Project Charter**, you need to establish:
+
+Core (required for every project):
 - What the system does and who it is for
 - The core problem it solves
-- What success looks like (primary outcomes)
+- What success looks like (primary outcomes, measurable where possible)
 - Hard constraints (platform, language, regulatory, performance, etc.)
 - What is explicitly out of scope
 - Any non-negotiable design decisions already made
+
+Extended (probe when the project appears non-trivial — use judgment):
+- Deployment and operational context: where does it run, at what scale, with what availability expectations?
+- External dependencies and integrations: APIs, databases, third-party services the system must talk to
+- Non-functional requirements: latency, throughput, security classification, data residency
+- Team and ownership context: who is building this, and are there existing systems it must coexist with?
+
+If in doubt whether extended probing is warranted, err on the side of asking. A few extra questions cost less than a shallow charter that needs revision later.
 
 **For a Feature Design**, you need to establish:
 - What this feature does and why it is needed now
@@ -53,7 +63,7 @@ For each question:
 3. If there is a gap, ask the next most important question.
 4. If the answer raises a new concern, address that before moving on.
 
-Stop asking when you have enough to write a complete, accurate first draft — not before, not after.
+Before moving to Step 3, verify you can fill every field in the summary template with a specific, concrete answer — no "TBD", "unknown", or vague generalizations. If any field is still ambiguous, ask one more targeted question before proceeding.
 
 ### Step 3 — Summarize and confirm
 
@@ -68,7 +78,7 @@ Once you have gathered enough information, write a brief summary in plain langua
 > **Constraints:** [key hard limits]
 > **Out of scope:** [explicit exclusions]
 >
-> Does this capture it accurately? Any corrections before I proceed?"
+> Does this capture it accurately? Any corrections, or anything important I haven't asked about?"
 
 Wait for explicit confirmation. Do not proceed to drafting until the user says yes (or equivalent).
 

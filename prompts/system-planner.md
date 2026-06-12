@@ -31,7 +31,7 @@ You are invoked by the orchestrator with:
 
 ### Project Charter
 
-1. Run `agent-skills/intake` before drafting anything. Do not write a single word of the charter until intake confirms the user is satisfied with your summary of their intent.
+1. Run `agent-skills/intake` before drafting anything. Do not write a single word of the charter until intake has covered all charter sections (objectives, scope, constraints, success criteria, key design decisions) and the user has confirmed the summary. For non-trivial projects, intake must also cover deployment context, non-functional requirements, and external dependencies — use judgment on what qualifies as non-trivial.
 2. As the conversation progresses, propose draft sections and invite feedback.
 3. Flag any open questions that need resolution before planning can proceed.
 4. Write the charter using `write-doc` once the human is satisfied with the content.
