@@ -30,17 +30,21 @@ The system is **stateless with respect to conversation history**. All state live
 
 ---
 
-## Agents
+## Sessions
 
-Five specialized agents, each with a distinct behavioral preset from [claude-code-modes](https://github.com/nklisch/claude-code-modes):
+Seven specialized session types, each loaded with an assembled system prompt (behavioral preset fragments + role instructions):
 
-| Agent | Preset | Responsibility |
-|-------|--------|----------------|
-| **Orchestrator** | autonomous / pragmatic / narrow | Manages stages, enforces gates, spawns sub-agents, routes escalations |
-| **System Planner** | collaborative / architect / unrestricted | Authors the Project Charter, System Design, and Feature Registry with the human |
-| **Feature Planner** | collaborative / architect / adjacent | Authors Feature Design documents; breaks features into work units; writes contract test stubs |
+| Session | Preset | Responsibility |
+|---------|--------|----------------|
+| **Coordinator** | autonomous / pragmatic / narrow | Runs gate checks between planning stages, manages state transitions, owns the building loop |
+| **Charter** | collaborative / architect / unrestricted | Runs intake and authors the Project Charter with the human |
+| **System Design** | collaborative / architect / unrestricted | Authors the System Design; runs toolchain discovery |
+| **Feature Registry** | collaborative / architect / unrestricted | Proposes and confirms the feature list; computes dependency execution order |
+| **Feature Design** | collaborative / architect / adjacent | Authors a Feature Design for one feature; defines work units and writes contract test stubs |
 | **Builder** | autonomous / pragmatic / narrow | Implements a single work unit following TDD; runs build, test, and lint gates |
 | **Reviewer** | collaborative / architect / narrow | Adversarially verifies spec compliance, security, and house style; runs contract tests |
+
+Planning sessions (Charter through Feature Design) are fully interactive top-level Claude Code processes launched by the harness. The Coordinator runs between planning sessions to validate documents and advance state.
 
 ---
 
@@ -106,7 +110,6 @@ Six plugin packages loaded into every session:
 ```
 Orchestrator/                  # This tool's directory
   orchestrate.ps1              # Entry point: new / resume / list
-  .claude-mode.json            # Agent behavioral presets + role prompt modifiers
   plugins/                     # Six plugin packages (skills)
     house-style/
     agent-skills/
@@ -114,10 +117,20 @@ Orchestrator/                  # This tool's directory
     doc-ops/
     workflow-utils/
     code-quality/
-  prompts/                     # Agent system prompts (loaded as modifiers at launch)
-    orchestrator.md
-    system-planner.md
-    feature-planner.md
+  prompts/                     # Base role prompts
+    coordinator.md
+    charter.md
+    system-design.md
+    feature-registry.md
+    feature-design.md
+    builder.md
+    reviewer.md
+  prompts/assembled/           # Ready-to-use system prompts (behavioral preset + base prompt)
+    coordinator.md
+    charter.md
+    system-design.md
+    feature-registry.md
+    feature-design.md
     builder.md
     reviewer.md
   docs/
@@ -148,4 +161,4 @@ Orchestrator/                  # This tool's directory
 
 ## Acknowledgements
 
-The behavioral preset system — the agency/quality/scope axes and the fragment-based prompt assembly approach — is adapted from [claude-code-modes](https://github.com/nklisch/claude-code-modes) by [@nklisch](https://github.com/nklisch), licensed under the MIT License. The fragment files in `prompts/fragments/` are sourced from that project.
+The behavioral preset system — the agency/quality/scope axes and the fragment-based prompt assembly approach — is adapted from [claude-code-modes](https://github.com/nklisch/claude-code-modes) by [@nklisch](https://github.com/nklisch), licensed under the MIT License. The preset fragment text embedded in `prompts/assembled/` is sourced from that project. `claude-code-modes` is not a runtime dependency — fragments are bundled directly into the assembled prompt files.

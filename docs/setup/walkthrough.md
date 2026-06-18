@@ -35,15 +35,6 @@ Planning branch [planning]:          planning               (accept default)
 Escalation target [@you]:            @your-github-username  (accept default)
 ```
 
-After initialization, open `C:\Projects\ping-server\.orchestrator\project.yaml` and fill in the `toolchain` section with the ping-server values:
-```yaml
-toolchain:
-  language: rust
-  build: cargo build
-  test: cargo test
-  lint: cargo clippy -- -D warnings
-```
-
 **What gets created by `orchestrate new`:**
 - `C:\Projects\ping-server\.orchestrator\project.yaml`
 - `C:\Projects\ping-server\.orchestrator\state.json` (stage: `init`)
@@ -55,15 +46,15 @@ toolchain:
 
 After initialization, add `.orchestrator/` to the project's `.gitignore` (the tool reminds you).
 
-The orchestrator session starts automatically after initialization and transitions stage to `planning/charter`.
+The harness loop starts automatically after initialization. The first session launched is the **charter session** (stage: `planning/charter`).
 
 ---
 
 ## Stage 1 — Project Charter (`planning/charter`)
 
-The orchestrator spawns a `system-planner` sub-agent. The system-planner opens a collaborative conversation.
+The harness launches a **charter session** — a fully interactive top-level Claude Code session. The charter session runs intake, drafts the document collaboratively, and waits for your approval before closing.
 
-**What the system-planner produces** (saved to `docs/project/project-charter.md` on the `planning` branch):
+**What the charter session produces** (saved to `docs/project/project-charter.md` on the `planning` branch):
 
 ```markdown
 ---
@@ -107,29 +98,25 @@ Straightforward. No external dependencies or research required.
 (none)
 ```
 
-**Your role**: Review the draft. Ask for changes if needed. When satisfied, say: `"Approved."` (explicit approval is required — the orchestrator will not advance without it).
+**Your role**: Review the draft. Ask for changes if needed. When satisfied, approve. The charter session marks the document `status: approved`, commits it to the `planning` branch, and tells you to close the window.
 
-**What the orchestrator does after approval:**
-- Marks charter `status: approved` in the document frontmatter
-- Commits the document to the `planning` branch
-- Presents the **System Design Stage Gate** checklist:
-  ```
-  - [x] project-charter.md is status: approved
-  - [x] validate-doc passes
-  - [x] check-staleness passes
-  - [x] Human has explicitly approved
-  - [x] Document committed on planning branch
-  ```
-- Signals a compaction point: _"This is a natural compaction point. You can run `/compact` now..."_
-- On your approval of the gate, advances to `planning/system-design`
+When you close the charter session, the harness launches a **coordinator session** to run the System Design Stage Gate:
+```
+- [x] project-charter.md is status: approved
+- [x] validate-doc passes
+- [x] check-staleness passes
+- [x] Human has explicitly approved
+- [x] Document committed on planning branch
+```
+The coordinator signals a compaction point, advances stage to `planning/system-design`, and exits. The harness then launches the system design session.
 
 ---
 
 ## Stage 2 — System Design (`planning/system-design`)
 
-The orchestrator spawns a `system-planner` with the approved charter as context.
+The harness launches a **system design session**. It reads the approved charter, runs intake for architectural decisions and toolchain discovery, drafts the document, and writes the confirmed toolchain values to `project.yaml`.
 
-**What the system-planner produces** (`docs/project/system-design.md` on `planning`):
+**What the system design session produces** (`docs/project/system-design.md` on `planning`):
 
 ```markdown
 ---
@@ -158,15 +145,17 @@ No frameworks. One file: src/main.rs.
 None. Standalone binary.
 ```
 
-**Your role**: Approve when satisfied.
+**Your role**: Approve when satisfied. Close the session window.
 
-**Gate and advance**: orchestrator runs Feature Registry Stage Gate check, signals compaction point, advances to `planning/feature-registry`.
+The harness launches a coordinator session for the Feature Registry Stage Gate, then launches the feature registry session.
 
 ---
 
 ## Stage 3 — Feature Registry (`planning/feature-registry`)
 
-**What the system-planner produces** (`docs/project/feature-registry.md` on `planning`):
+The harness launches a **feature registry session**. It reads the approved charter and system design, proposes the feature list, computes the dependency execution order, and drafts the registry.
+
+**What the feature registry session produces** (`docs/project/feature-registry.md` on `planning`):
 
 ```markdown
 ---
@@ -203,22 +192,17 @@ with body {"status": "ok"}.
 - Server starts on PORT env var (default 8080)
 ```
 
-**Your role**: Approve.
+**Your role**: Approve. Close the session window.
 
-**What the orchestrator does after approval:**
-- Runs `dependency-graph` (result: F001 has no dependencies, is immediately ready)
-- Presents the execution plan: `F001 (Health Endpoint) — no dependencies, ready to design`
-- Creates the `feature/F001` GitHub label
-- Signals compaction point
-- Advances to `planning/feature-design`
+The coordinator gate check runs `dependency-graph` (result: F001 has no dependencies, ready to design), populates `feature_design_queue`, sets `current_feature: F001`, and launches the first feature design session.
 
 ---
 
 ## Stage 4 — Feature Design (`planning/feature-design`)
 
-The orchestrator spawns a `feature-planner` scoped to F001.
+The harness launches a **feature design session** scoped to F001 (read from `current_feature` in the state file).
 
-**What the feature-planner produces** (`docs/features/F001/feature-design.md` on `planning`):
+**What the feature design session produces** (`docs/features/F001/feature-design.md` on `planning`):
 
 ```markdown
 ---
@@ -290,7 +274,7 @@ Standalone feature. No cross-feature dependencies.
 (none)
 ```
 
-**What the feature-planner also does** before the gate:
+**What the feature design session also does** before closing:
 - Commits the contract test stubs to the `feature/F001-health-endpoint` branch (empty tests that fail)
 - These are the failing tests the builder will make pass
 
@@ -306,9 +290,9 @@ Standalone feature. No cross-feature dependencies.
 - [x] GitHub Issue #1 created for WU-001 with labels: work-unit, feature/F001, status/planned
 ```
 
-**Your role**: Review the feature design, check the contract tests are sensible. Approve.
+**Your role**: Review the feature design, check the contract tests are sensible. Approve. Close the session window.
 
-**After approval**: orchestrator signals compaction point, advances to `building`.
+The coordinator gate check validates the feature design, finds `feature_design_queue` empty, creates GitHub Issues for all work units, signals a compaction point, and advances to `building`.
 
 ---
 
@@ -337,7 +321,7 @@ Updates `state/ping-server.json`:
 
 ### 5b. Builder agent
 
-The orchestrator calls `spin-agent` → `context-assembly` assembles the builder prompt (behavioral preset + skills + project config + system design + feature design + issue #1 body), then spawns the builder via the `Agent` tool.
+The coordinator spawns a builder agent via the `Agent` tool with the assembled context (project config + system design + feature design + issue #1 body).
 
 **Builder workflow (TDD):**
 
@@ -436,9 +420,9 @@ Use this list when running the system for the first time to confirm each piece w
 | `orchestrate new` dry-run | Prints planned actions, makes no changes |
 | `orchestrate new --Execute` | Creates state files, labels, planning branch |
 | `orchestrate list` | Shows `ping-server` with stage `planning/charter` |
-| Charter created by system-planner | Document appears on `planning` branch |
-| Charter gate checklist presented | All items listed before orchestrator asks for approval |
-| Compaction signal after charter approval | Orchestrator mentions `/compact` |
+| Charter session launched by harness | Charter session opens interactively; document appears on `planning` branch after approval |
+| Coordinator gate check runs after charter | Gate checklist validated; stage advances to `planning/system-design` |
+| Compaction signal after charter gate | Coordinator mentions `/compact` |
 | `orchestrate resume` after `/compact` | Reads state file, reconciles, resumes at correct stage |
 | Feature design gate blocks without contract tests | Gate checklist fails the contract-tests item |
 | Builder spawned with correct context | Builder's opening message references WU-001 spec |

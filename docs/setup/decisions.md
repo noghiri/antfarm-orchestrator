@@ -1,17 +1,17 @@
 # Orchestrator — Architectural Decisions & Implementation Status
 
-_Last updated: 2026-04-30 (D9–D13 added from smoketest findings)._
+_Last updated: 2026-06-18 (D14 added; D1, D7, D11, D12 updated for per-stage session model)._
 
 ---
 
 ## Architectural Decisions
 
 ### D1 — `orchestrate` command form
-**Decision:** Shell script wrapping `claude-mode <preset>`.
+**Decision:** PowerShell harness (`orchestrate.ps1`) that launches Claude Code sessions directly via `claude --system-prompt-file <assembled-prompt>`.
 
-`orchestrate.ps1` (repo root) provides `new`, `resume`, and `list` subcommands. Each initializes or loads project state and invokes `claude-mode orchestrator --modifier orchestrator-role --modifier context-pacing` to start the Claude Code session. Built on `claude-code-modes` (https://github.com/nklisch/claude-code-modes).
+`orchestrate.ps1` (repo root) provides `new`, `resume`, and `list` subcommands. `new` initializes project state and immediately enters the harness loop. `resume` re-enters the harness loop for an existing project. `list` reads state files and prints a summary table.
 
-**Constraint resolved:** Sub-agents spawned via the `Agent` tool inherit the orchestrator's system prompt, not their own preset. `workflow-utils/context-assembly` now embeds the target role's behavioral instructions (agency/quality/scope) as the first block of every assembled sub-agent prompt. See `agent-skills/spin-agent` and `workflow-utils/context-assembly`.
+The harness loop (`Invoke-HarnessLoop`) alternates between coordinator sessions and work sessions. Each session is launched as a top-level Claude Code process via `Start-Process -Wait`, with an assembled system prompt passed via `--system-prompt-file`. Behavioral presets (agency/quality/scope) are embedded directly in the assembled prompt files in `prompts/assembled/` — `claude-code-modes` is the source of the fragment text but is not a runtime dependency.
 
 ---
 
@@ -69,13 +69,13 @@ Residual race (two instances incorrectly assigned the same feature): the alphabe
 ---
 
 ### D7 — Context management
-**Decision:** The orchestrator is stateless with respect to conversation history. All critical state lives in durable storage: state file, project config, GitHub Issues, and planning documents (L1 + L2). Context compaction at any point is safe; `workflow-utils/context-reload` fully restores the working picture.
+**Decision:** All sessions are stateless with respect to conversation history. All critical state lives in durable storage: state file, project config, GitHub Issues, and planning documents (L1 + L2). Context compaction at any point is safe; the session re-reads durable state on startup.
 
 **Implementation:**
-- `orchestrate.ps1` launches the orchestrator with `--modifier context-pacing` (auto-pacing from claude-code-modes)
-- `prompts/orchestrator.md` has a "Context management" section specifying the stateless principle, compaction signal points (each stage gate, each feature completion), and durable sources
-- `workflow-utils/context-reload` (new skill) defines the reload procedure: state file → project config → planning document inventory → reconcile-state → dependency graph
-- Planning documents are inventoried by frontmatter only (not loaded in full); full content is passed to sub-agents via `context-assembly`
+- Each planning session clears `next_session` to `null` as its first action (startup procedure), then reads all relevant durable state
+- `prompts/assembled/coordinator.md` has a "Context management" section specifying the stateless principle, compaction signal points, and durable sources
+- `workflow-utils/context-reload` defines the reload procedure for the coordinator: state file → project config → planning document inventory → reconcile-state → dependency graph
+- Because each work session is a fresh top-level process, it has no inherited context — it loads exactly what it needs from durable state at startup
 
 ---
 
@@ -93,17 +93,34 @@ Residual race (two instances incorrectly assigned the same feature): the alphabe
 
 ---
 
-### D11 — Interactive intake skill for planner agents
-**Decision:** A dedicated `agent-skills/intake` skill is created. System-planner and feature-planner both load it before drafting any document. The skill enforces a structured discovery dialog: introduce scope, ask one question at a time, summarize understanding, get explicit user confirmation before proceeding to draft.
+### D11 — Interactive intake skill for planning sessions
+**Decision:** A dedicated `agent-skills/intake` skill is created. All planning work sessions (charter, system-design, feature-registry, feature-design) load it before drafting any document. The skill enforces a structured discovery dialog: introduce scope, ask one question at a time, summarize understanding, get explicit user confirmation before proceeding to draft.
 
-**Rationale:** Both system-planner and feature-planner share the same failure mode (assuming rather than asking). A shared skill is more maintainable than duplicating intake logic in each prompt.
+**Rationale:** All planning sessions share the same failure mode (assuming rather than asking). A shared skill is more maintainable than duplicating intake logic in each prompt.
 
 ---
 
-### D12 — Toolchain discovery as a system-planner workflow step
-**Decision:** After language and framework are settled during planning, system-planner runs a toolchain discovery step: asks about required tools (compilers, runtimes, package managers), checks availability, and writes build/test/run commands to `project.yaml`. No new document type is introduced.
+### D12 — Toolchain discovery as a system-design session workflow step
+**Decision:** After language and framework are settled during planning, the system-design session runs a toolchain discovery step: asks about required tools (compilers, runtimes, package managers), checks availability, and writes build/test/run commands to `project.yaml`. No new document type is introduced.
 
 **Rationale:** Tool discovery is tightly coupled to language/framework decisions and its output belongs in `project.yaml` where code-quality skills already read from.
+
+---
+
+### D14 — Per-stage session model for planning
+**Decision:** Each planning stage (charter, system design, feature registry, feature design) runs as its own top-level interactive Claude Code session, launched by the harness. The harness alternates between coordinator sessions (gate checks, state transitions) and work sessions (collaborative document authoring). A single `next_session` field in the state file is the routing signal.
+
+**Rationale:** Sub-agents spawned via the `Agent` tool are fire-and-forget — `AskUserQuestion` is architecturally unavailable to them and they cannot participate in multi-turn dialogs. Trying to run interactive planning stages as sub-agents meant they skipped questions entirely and assumed context. Top-level sessions are fully interactive and have no this constraint.
+
+**Mechanism:**
+- Work sessions clear `next_session` to `null` as their first action (signals the harness they are running)
+- When the human closes the work session, the harness re-reads `next_session` from the state file
+- If `next_session` is `null`, the harness launches a coordinator session to run a gate check
+- The coordinator validates the completed document, advances the stage, and writes the next `next_session` value, then exits
+- The harness launches the next work session and the cycle repeats
+- `next_session: "done"` terminates the planning loop and hands off to the building loop
+
+**Files:** `orchestrate.ps1` (`Invoke-HarnessLoop`), `prompts/assembled/coordinator.md`, `prompts/assembled/charter.md`, `prompts/assembled/system-design.md`, `prompts/assembled/feature-registry.md`, `prompts/assembled/feature-design.md`
 
 ---
 
@@ -135,8 +152,12 @@ Residual race (two instances incorrectly assigned the same feature): the alphabe
 - **`.claude-mode.json`**: added `modifiers` section registering all 5 role prompts (`./prompts/*.md`) for use with `--modifier <role>-role`
 
 ### Prompts
-- **`prompts/orchestrator.md`**: added "Context management" section (stateless principle, compaction signal points, durable sources including L1/L2 planning documents); registered `workflow-utils/context-reload`
-- **`prompts/feature-planner.md`**: step 4 updated with per-language contract test location and naming conventions; fail-immediately stub requirement made explicit
+- **`prompts/coordinator.md`** + **`prompts/assembled/coordinator.md`**: autonomous/pragmatic/narrow; gate-check-and-exit pattern for planning stages; full building loop for building stage; stateless design with context management section
+- **`prompts/charter.md`** + **`prompts/assembled/charter.md`**: collaborative/architect/unrestricted; clears `next_session` on startup; inline intake with core+extended tiers
+- **`prompts/system-design.md`** + **`prompts/assembled/system-design.md`**: collaborative/architect/unrestricted; clears `next_session` on startup; toolchain discovery step (D12)
+- **`prompts/feature-registry.md`** + **`prompts/assembled/feature-registry.md`**: collaborative/architect/unrestricted; clears `next_session` on startup; dependency graph computation
+- **`prompts/feature-design.md`** + **`prompts/assembled/feature-design.md`**: collaborative/architect/adjacent; clears `next_session` and reads `current_feature` on startup; contract test stubs, work unit decomposition, dependency awareness
+- **Deleted:** `prompts/orchestrator.md`, `prompts/system-planner.md`, `prompts/feature-planner.md` and their assembled counterparts (superseded by the above)
 
 ### Code quality
 - **`code-quality/run-contract-tests`**: fixed Rust convention (function name prefix `contract_`, not comment); added Go; added per-language table with file location, naming, and run command
@@ -150,12 +171,12 @@ Residual race (two instances incorrectly assigned the same feature): the alphabe
 
 ## Remaining Work
 
-### Task #14 — Smoke-test (blocked on sandbox repo)
+### Smoke-test (blocked on sandbox repo)
 
 Once a dedicated sandbox GitHub repo is available, run the orchestrator through the full planning stage using the Ping Server example from `docs/setup/walkthrough.md`:
 
-1. `.\orchestrate.ps1 new --Project ping-server --Repo <sandbox-org>/ping-server --ProjectDir <path-to-local-clone> --Execute`
-2. Full planning stage: charter → system design → feature registry → feature design
+1. `.\orchestrate.ps1 new -Project ping-server -Repo <sandbox-org>/ping-server -ProjectDir <path-to-local-clone> -Execute`
+2. Full planning stage: charter → system design → feature registry → feature design (each as its own harness-launched session)
 3. Validate against the checklist table at the bottom of `docs/setup/walkthrough.md`
 
 This is the acceptance test for "usable." Do not proceed to building-stage automation until planning stage passes.

@@ -90,7 +90,7 @@ After initialization, add `.orchestrator/` to the project's `.gitignore` so that
 
 ### 3. Edit the project config
 
-Open `<project-dir>\.orchestrator\project.yaml` and fill in:
+Open `<project-dir>\.orchestrator\project.yaml` and confirm the GitHub settings and escalation target are correct. The `toolchain` and `ci` sections will be filled in by the system design session during planning — leave them as initialized.
 
 ```yaml
 name: "My Project"
@@ -103,15 +103,15 @@ github:
   planning_branch: planning
 
 ci:
-  enabled: false   # set to true if using GitHub Actions
+  enabled: false    # filled in by system design session
   required: false
   provider: none
 
 toolchain:
-  language: rust
-  build: cargo build
-  test: cargo test
-  lint: cargo clippy -- -D warnings
+  language: null    # filled in by system design session
+  build: null
+  test: null
+  lint: null
 
 orchestrator:
   escalation_target: "@github-user"
@@ -146,11 +146,13 @@ The orchestrator's `check-ci` skill queries `gh run list --branch <branch>` to v
 
 ### 5. Start the orchestrator
 
+The harness loop starts automatically at the end of `orchestrate new`. To resume in a later session:
+
 ```powershell
 .\orchestrate.ps1 resume -Project my-project
 ```
 
-The orchestrator will begin the Project Charter stage — a collaborative conversation to define what you are building.
+The harness will launch a coordinator session to check state, then launch the appropriate work session (charter, system design, feature registry, or feature design) based on where you left off.
 
 ---
 
@@ -206,10 +208,20 @@ Orchestrator/                  # This repo
     doc-ops/
     workflow-utils/
     code-quality/
-  prompts/                     # Agent system prompts
-    orchestrator.md
-    system-planner.md
-    feature-planner.md
+  prompts/                     # Agent base prompts (combined with fragments → assembled/)
+    coordinator.md
+    charter.md
+    system-design.md
+    feature-registry.md
+    feature-design.md
+    builder.md
+    reviewer.md
+  prompts/assembled/           # Ready-to-use system prompts (fragment header + base prompt)
+    coordinator.md
+    charter.md
+    system-design.md
+    feature-registry.md
+    feature-design.md
     builder.md
     reviewer.md
   docs/
