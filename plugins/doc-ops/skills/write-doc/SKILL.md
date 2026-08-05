@@ -1,6 +1,5 @@
 ---
 description: Write a validated planning document to its canonical path and commit it. Invoke explicitly — always validates before writing, verifies correct branch, and commits with standard message.
-disable-model-invocation: true
 allowed-tools:
   - Write
   - Edit
@@ -18,15 +17,17 @@ Write a planning document to its canonical path. Always validates the document b
 
 | Document type | Branch | Path |
 |---------------|--------|------|
-| `project-charter` | `planning` | `docs/project/project-charter.md` |
-| `system-design` | `planning` | `docs/project/system-design.md` |
-| `feature-registry` | `planning` | `docs/project/feature-registry.md` |
+| `project-charter` | `planning` or `planning-revision-r<N>` | `docs/project/project-charter.md` |
+| `system-design` | `planning` or `planning-revision-r<N>` | `docs/project/system-design.md` |
+| `feature-registry` | `planning` or `planning-revision-r<N>` | `docs/project/feature-registry.md` |
 | `feature-design` | `feature/<feature-id>-<slug>` | `docs/features/<feature-id>/feature-design.md` |
+
+The `planning-revision-r<N>` form is only valid when the state file's `l1_revision.branch` names that exact branch — i.e., during an active L1 revision session (see `l1-revision`). Outside of that, only `planning` is valid for the three L1 document types.
 
 ## Write procedure
 
 1. Validate the document using `validate-doc`. If validation fails, abort — do not write.
-2. Verify the current git branch matches the expected branch for this document type.
+2. Verify the current git branch matches the expected branch for this document type (`planning`, or the exact `l1_revision.branch` value if an L1 revision is active per the state file).
    - If on the wrong branch, abort and report which branch is required.
 3. Write the document to its canonical path.
 4. Stage and commit the file:

@@ -1,6 +1,5 @@
 ---
 description: Claim a work unit GitHub Issue for this instance using label-based locking. Invoke explicitly before starting a work unit to prevent multi-instance conflicts. Dry-run by default.
-disable-model-invocation: true
 allowed-tools:
   - "Bash(gh issue view *)"
   - "Bash(gh issue edit *)"
@@ -19,7 +18,7 @@ Claim a work unit GitHub Issue for this instance, preventing other instances fro
    - Add label `status/in-progress`
    - Remove label `status/planned`
    - Assign to the instance GitHub username
-5. After claiming, re-read the issue to confirm only this instance's `claimed-by/*` label is present. If multiple `claimed-by/*` labels are present (race condition), follow the race resolution protocol in `workflow-utils/multi-instance`.
+5. After claiming, re-read the issue to confirm only this instance's `claimed-by/*` label is present. If multiple `claimed-by/*` labels are present (race condition), follow the race resolution protocol in `workflow-utils:multi-instance`.
 
 ## Instance ID format
 

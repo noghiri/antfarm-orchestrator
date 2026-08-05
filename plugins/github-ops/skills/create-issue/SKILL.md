@@ -1,6 +1,5 @@
 ---
 description: Create a GitHub Issue for a work unit or escalation. Mutating operation — invoke explicitly with dry-run by default and --execute to apply. Requires gh CLI authentication.
-disable-model-invocation: true
 allowed-tools:
   - "Bash(gh issue create *)"
   - "Bash(gh auth status)"

@@ -30,7 +30,7 @@ Planning agents (`system-planner`, `feature-planner`) use `opus` because they ma
 
 ## Context assembly
 
-Before spawning a sub-agent, assemble its context using `workflow-utils/context-assembly`. The assembled context must include:
+Before spawning a sub-agent, assemble its context using `workflow-utils:context-assembly`. The assembled context must include:
 - Relevant approved planning documents (project charter, system design, feature design)
 - The work unit spec (for builder and reviewer)
 - Loaded skills appropriate to the agent's role
@@ -38,7 +38,7 @@ Before spawning a sub-agent, assemble its context using `workflow-utils/context-
 
 ## Invocation
 
-Spawn the sub-agent using the Claude Code `Agent` tool with `subagent_type: "general-purpose"` and the `model` value from the table above. The `prompt` argument is the assembled context returned by `workflow-utils/context-assembly` — it already contains the role's behavioral preset instructions, all relevant documents, and the skills list, so no additional wrapping is needed.
+Spawn the sub-agent using the Claude Code `Agent` tool with `subagent_type: "general-purpose"` and the `model` value from the table above. The `prompt` argument is the assembled context returned by `workflow-utils:context-assembly` — it already contains the role's behavioral preset instructions, all relevant documents, and the skills list, so no additional wrapping is needed.
 
 The assembled context must be the entire `prompt` value. Do not summarize or paraphrase it; pass it in full so the sub-agent has the complete spec.
 
@@ -63,7 +63,7 @@ Issue #42: ...
 ## After invocation
 
 The `Agent` tool returns the sub-agent's complete output when it finishes. Read it for:
-- An explicit escalation signal (look for the phrase "ESCALATION:" or a call to `agent-skills/escalate`)
+- An explicit escalation signal (look for the phrase "ESCALATION:" or a call to `agent-skills:escalate`)
 - A completion signal ("work unit complete", "review complete", etc.)
 
-If an escalation is present, route it to the human via `agent-skills/escalate` before spawning the next sub-agent.
+If an escalation is present, route it to the human via `agent-skills:escalate` before spawning the next sub-agent.

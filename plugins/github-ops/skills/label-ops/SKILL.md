@@ -1,6 +1,5 @@
 ---
 description: Add and remove labels on GitHub Issues and Pull Requests. Invoke explicitly for status transitions, claim operations, and label cleanup. Dry-run by default. Reference for the full label taxonomy.
-disable-model-invocation: true
 allowed-tools:
   - "Bash(gh issue edit *)"
   - "Bash(gh label create *)"

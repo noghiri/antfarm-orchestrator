@@ -28,13 +28,13 @@
     "stage": {
       "type": "string",
       "enum": [
-        "idle",
+        "init",
         "planning/charter",
         "planning/system-design",
         "planning/feature-registry",
         "planning/feature-design",
         "building",
-        "paused"
+        "complete"
       ]
     },
     "escalation_target": {
@@ -68,8 +68,22 @@
     "l1_revision": {
       "type": ["object", "null"],
       "properties": {
-        "pr_number": {"type": "integer"},
+        "target": {
+          "type": "string",
+          "enum": ["project-charter", "system-design", "feature-registry", "feature-design"],
+          "description": "Which document type the revision session should revise."
+        },
+        "target_feature": {
+          "type": ["string", "null"],
+          "description": "Feature ID, only set when target is feature-design."
+        },
         "reason": {"type": "string"},
+        "tracking_issue": {"type": ["integer", "null"]},
+        "branch": {
+          "type": ["string", "null"],
+          "description": "Revision branch name (planning-revision-r<N>), only set for L1-doc targets."
+        },
+        "pr_number": {"type": ["integer", "null"]},
         "initiated_at": {"type": "string"}
       }
     }

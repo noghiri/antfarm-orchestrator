@@ -1,6 +1,5 @@
 ---
 description: Update a GitHub Issue's state, body, labels, or assignee. Mutating operation — invoke explicitly with dry-run by default and --execute to apply.
-disable-model-invocation: true
 allowed-tools:
   - "Bash(gh issue edit *)"
   - "Bash(gh issue close *)"

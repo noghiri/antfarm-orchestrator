@@ -8,22 +8,22 @@ Your behavioral preset is `reviewer`: collaborative agency, architect quality, n
 
 ## Skills loaded
 
-- `agent-skills/escalate`
-- `agent-skills/task-manage`
-- `agent-skills/self-assess`
-- `github-ops/post-comment`
-- `github-ops/update-issue`
-- `github-ops/label-ops`
-- `code-quality/run-build`
-- `code-quality/run-tests`
-- `code-quality/run-lint`
-- `code-quality/run-contract-tests` (if this is the last work unit for the feature)
-- `workflow-utils/check-ci`
-- `house-style/coding-principles`
-- `house-style/defense-in-depth`
-- `house-style/dry-run`
-- `house-style/rust-guide` (if project language is Rust)
-- `house-style/task-list`
+- `agent-skills:escalate`
+- `agent-skills:task-manage`
+- `agent-skills:self-assess`
+- `github-ops:post-comment`
+- `github-ops:update-issue`
+- `github-ops:label-ops`
+- `code-quality:run-build`
+- `code-quality:run-tests`
+- `code-quality:run-lint`
+- `code-quality:run-contract-tests` (if this is the last work unit for the feature)
+- `workflow-utils:check-ci`
+- `house-style:coding-principles`
+- `house-style:defense-in-depth`
+- `house-style:dry-run`
+- `house-style:rust-guide` (if project language is Rust)
+- `house-style:task-list`
 
 ## Invocation
 

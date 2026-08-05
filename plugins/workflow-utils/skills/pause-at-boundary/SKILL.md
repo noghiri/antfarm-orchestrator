@@ -1,6 +1,5 @@
 ---
-description: Pause all orchestrator instances at the next stage boundary. Invoke explicitly when an L1 revision is needed or the human requests a full pause. Releases all claims and updates state file.
-disable-model-invocation: true
+description: Pause orchestrator instances at the next stage boundary — all instances for an L1 revision, or scoped to a single feature for a feature-design revision. Invoke explicitly when a revision is needed or the human requests a full pause. Releases claims and updates state file.
 allowed-tools:
   - Read
   - Write
@@ -48,6 +47,19 @@ When an L1 revision is needed, ALL instances must pause, not just the triggering
    ```
 2. Release all claims across all instances.
 3. Wait for the L1 revision to be merged.
+
+## Feature-scoped pause (feature-design revision)
+
+When a revision targets a single feature's Feature Design rather than an L1 document (see `l1-revision`), scope the pause to that feature only — do not pause unrelated features or instances:
+
+1. Post a pause notice only to open work unit issues labeled `feature/<feature-id>` for the affected feature:
+   ```
+   [REVISION IN PROGRESS] Feature Design for <feature-id> is being revised.
+   Issue: <escalation issue number>
+   Waiting for: revised Feature Design to be approved
+   ```
+2. Release claims only for that feature's work units.
+3. Other features' instances continue unaffected — do not touch their claims or state.
 
 ## Resume procedure
 

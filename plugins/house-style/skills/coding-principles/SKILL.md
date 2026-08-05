@@ -42,6 +42,14 @@ Do not rename unused variables with a leading underscore, re-export removed type
 
 Do not add emojis to code, comments, commit messages, or any written output unless the user explicitly requests them.
 
+## Build before infra/ops assessment
+
+The same minimal-footprint reasoning applies to project sequencing, not just code. Default to building core functionality first. Do not recommend an upfront infrastructure/ops assessment pass (deployment automation, monitoring, scaling work) as a prerequisite to building features, unless the System Design already flagged it as a hard blocking dependency — i.e., a feature genuinely cannot be built or tested without it. Absent that, ops/infra work is deferred until a concrete need for it exists, the same way speculative error handling or premature abstractions are deferred.
+
+## Don't assume shipping readiness prematurely
+
+Treat "not all work units are complete" as a hard signal that the project is not ready to ship or go live — never plan, discuss, or make decisions as though it were. This applies especially during planning stages (System Design, Feature Registry, Feature Design), where a passing mention of a future capability (e.g. "if this ever needs to accept payments") can tempt a premature detour into production-readiness or deployment discussion, or into deciding a concrete vendor/processor choice, for something that doesn't exist yet. If a future capability comes up, note it and move on — do not treat the project as deployable or monetizable until the work units that actually deliver it are built.
+
 ---
 
 ## Attribution

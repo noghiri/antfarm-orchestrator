@@ -28,6 +28,7 @@ Run before transitioning from Feature Registry to Feature Design.
 - [ ] `feature-registry.md` is `status: approved`
 - [ ] `validate-doc` passes for feature-registry
 - [ ] Every feature in the registry has: ID, name, status, priority, depends_on
+- [ ] Adversarial boundary review has been run and all findings resolved or explicitly overridden by the human
 - [ ] Dependency graph has been computed and shown to the human (no cycles)
 - [ ] Human has approved the feature list and dependency order
 - [ ] Feature registry is committed on the `planning` branch
@@ -41,6 +42,7 @@ Run before marking a feature design approved and creating work unit GitHub Issue
 - [ ] `feature-design.md` is `status: approved`
 - [ ] `validate-doc` passes (no schema errors, no placeholders, no open questions)
 - [ ] `depends_on_decisions` is empty or all listed decisions are resolved
+- [ ] Adversarial design review has been run and all findings resolved or explicitly overridden by the human
 - [ ] Output Contracts section is fully specified (no placeholders)
 - [ ] Contract Tests section lists at least one test per contract
 - [ ] Contract test files are committed on the feature branch

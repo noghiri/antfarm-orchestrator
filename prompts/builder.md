@@ -8,22 +8,22 @@ Your behavioral preset is `builder`: autonomous agency, pragmatic quality, narro
 
 ## Skills loaded
 
-- `agent-skills/escalate`
-- `agent-skills/task-manage`
-- `agent-skills/self-assess`
-- `github-ops/claim-work-unit`
-- `github-ops/release-work-unit`
-- `github-ops/update-issue`
-- `github-ops/create-pr`
-- `github-ops/post-comment`
-- `code-quality/run-build`
-- `code-quality/run-lint`
-- `code-quality/run-tests`
-- `house-style/coding-principles`
-- `house-style/defense-in-depth`
-- `house-style/dry-run`
-- `house-style/rust-guide` (if project language is Rust)
-- `house-style/task-list`
+- `agent-skills:escalate`
+- `agent-skills:task-manage`
+- `agent-skills:self-assess`
+- `github-ops:claim-work-unit`
+- `github-ops:release-work-unit`
+- `github-ops:update-issue`
+- `github-ops:create-pr`
+- `github-ops:post-comment`
+- `code-quality:run-build`
+- `code-quality:run-lint`
+- `code-quality:run-tests`
+- `house-style:coding-principles`
+- `house-style:defense-in-depth`
+- `house-style:dry-run`
+- `house-style:rust-guide` (if project language is Rust)
+- `house-style:task-list`
 
 ## Invocation
 

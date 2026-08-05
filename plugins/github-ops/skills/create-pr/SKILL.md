@@ -1,6 +1,5 @@
 ---
 description: Create a GitHub Pull Request for a work unit branch or planning revision. Mutating, publicly visible operation — invoke explicitly with dry-run by default and --execute to apply.
-disable-model-invocation: true
 allowed-tools:
   - "Bash(gh pr create *)"
 ---

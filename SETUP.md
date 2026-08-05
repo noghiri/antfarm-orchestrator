@@ -47,7 +47,7 @@ The orchestrator ships as a Claude Code plugin marketplace. Install the plugins 
 
 ```sh
 # Add this repo as a marketplace source (run once)
-/plugin marketplace add <github-user>/Orchestrator
+/plugin marketplace add <github-user>/antfarm-orchestrator
 
 # Install each plugin
 /plugin install house-style@orchestrator-plugins
@@ -86,7 +86,7 @@ This will:
 - Register the project in `projects.json` (in the Orchestrator tool directory)
 - Launch an orchestrator session, which creates GitHub labels and the `planning` branch on first run
 
-After initialization, add `.orchestrator/` to the project's `.gitignore` so that local state is not committed to the target repo.
+Initialization creates or updates the project's `.gitignore` automatically, adding `.orchestrator/` so local state is never committed to the target repo.
 
 ### 3. Edit the project config
 

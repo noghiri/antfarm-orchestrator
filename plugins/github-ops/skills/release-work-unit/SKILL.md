@@ -1,6 +1,5 @@
 ---
 description: Release a claimed work unit Issue back to the pool or transition it to complete, blocked, or paused. Invoke explicitly when a work unit finishes, escalates, or pauses. Dry-run by default.
-disable-model-invocation: true
 allowed-tools:
   - "Bash(gh issue edit *)"
   - "Bash(gh issue comment *)"

@@ -16,7 +16,7 @@ Load this skill as the first action when:
 ## Core rules
 
 - **Never assume.** If you do not know something, ask. Do not fill in gaps with plausible guesses.
-- **One question at a time.** Do not present a list of questions. Ask one, wait for the answer, then decide what to ask next based on what you learned.
+- **One question at a time.** Do not present a list of questions, and do not bundle multiple questions into a single message even as flowing prose — "What's your target platform, and separately, how should onboarding feel?" is two questions wearing one sentence, not one question. Ask one, wait for the answer, then decide what to ask next based on what you learned. The only exception is a genuinely trivial, independent confirmation (e.g. two unrelated yes/no defaults) — anything non-trivial or complex is asked strictly alone, never batched, no exceptions.
 - **Follow the thread.** Each answer may resolve multiple open questions or open new ones. Adapt accordingly.
 - **Stay in scope.** Only ask what you need to draft the document at hand. Do not probe for information that belongs in later stages.
 
@@ -41,6 +41,8 @@ Core (required for every project):
 - Hard constraints (platform, language, regulatory, performance, etc.)
 - What is explicitly out of scope
 - Any non-negotiable design decisions already made
+- Primary user workflows, walked through end-to-end (not just named — actually traced step by step)
+- What key features should look and feel like to the person using them
 
 Extended (probe when the project appears non-trivial — use judgment):
 - Deployment and operational context: where does it run, at what scale, with what availability expectations?
@@ -77,6 +79,8 @@ Once you have gathered enough information, write a brief summary in plain langua
 > **Success looks like:** [measurable or observable outcomes]
 > **Constraints:** [key hard limits]
 > **Out of scope:** [explicit exclusions]
+> **Key workflows:** [primary user workflows, walked through end-to-end]
+> **What it should feel like:** [how key features should look/feel to the person using them]
 >
 > Does this capture it accurately? Any corrections, or anything important I haven't asked about?"
 

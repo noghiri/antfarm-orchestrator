@@ -23,14 +23,15 @@ gh issue list --label "escalation-needed" --state open --json number,title,body,
 
 For each escalation, determine its scope:
 
-**L1 escalation** — requires changing a planning document that affects multiple features:
+**L1 escalation** — requires changing a planning document that affects multiple features, or another feature's already-approved Feature Design:
 - Change to project charter, system design, or feature registry
 - Discovery that a core architectural assumption is wrong
 - A cross-feature conflict that can only be resolved by re-planning
+- A different feature's already-approved Feature Design must change (e.g. its output contracts) — this is L2-scoped in the sense that only one feature-design doc changes, but it still requires the controlled revision process, not a direct edit, since another feature already depends on the approved version
 
-→ Trigger `pause-at-boundary` for all instances before presenting to the human.
+→ Route to `l1-revision` (see below). It determines the correct pause scope itself — full pause for L1 docs, feature-scoped for a single Feature Design.
 
-**L2 escalation** — scoped to a single feature or work unit:
+**L2 escalation** — scoped to a single feature or work unit, resolvable without revising any already-approved document:
 - Ambiguity in a feature spec
 - Missing information that can be resolved without changing L1 docs
 - A work unit that turned out to be larger than estimated (split proposal)
@@ -64,7 +65,7 @@ For each escalation:
 4. Record the decision on the GitHub Issue as a comment
 5. Remove the `escalation-needed` label
 6. If L2: resume the affected work unit with the new information
-7. If L1: open an L1 revision PR (use the `l1-revision` skill)
+7. If L1: run `l1-revision`. It records the revision request and hands the actual drafting off to the matching stage session — do not draft the change yourself and do not open the PR directly from here.
 
 ## Order of priority
 

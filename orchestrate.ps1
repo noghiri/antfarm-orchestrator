@@ -121,14 +121,11 @@ function Show-DryRun([string[]]$Actions) {
     Write-Host ''
 }
 
-function Start-Session([string]$ProjectSlug, [string]$AbsProjectDir, [string]$FeatureScope = '') {
+function Invoke-ClaudeSession([string]$PromptPath, [string]$ProjectSlug, [string]$AbsProjectDir, [string]$FeatureScope = '') {
     $startupContext = "Orchestrator startup context -- project_slug: $ProjectSlug  project_dir: $AbsProjectDir"
     if ($FeatureScope) { $startupContext += "  feature_scope: $FeatureScope" }
 
-    # Assemble the orchestrator system prompt from the pre-built template, substituting
-    # environment variables, then write to a temp file for --system-prompt-file.
-    $templatePath = Join-Path $Script:Root 'prompts\assembled\orchestrator.md'
-    $template     = Get-Content $templatePath -Raw -Encoding utf8
+    $template  = Get-Content $PromptPath -Raw -Encoding utf8
 
     $isGit     = if (Test-Path (Join-Path $AbsProjectDir '.git')) { 'true' } else { 'false' }
     $gitStatus = ''
@@ -151,12 +148,50 @@ function Start-Session([string]$ProjectSlug, [string]$AbsProjectDir, [string]$Fe
     $prompt += "`n`n$startupContext"
 
     $tmpFile = [System.IO.Path]::GetTempFileName()
+    Push-Location $AbsProjectDir
     try {
         Set-Content $tmpFile -Value $prompt -Encoding utf8
-        & claude --system-prompt-file $tmpFile --model claude-sonnet-4-6
+        & claude --system-prompt-file $tmpFile --model claude-sonnet-4-6 'Begin the session per your Session startup / Startup procedure instructions.'
     }
     finally {
+        Pop-Location
         Remove-Item $tmpFile -ErrorAction SilentlyContinue
+    }
+}
+
+function Invoke-HarnessLoop([string]$ProjectSlug, [string]$AbsProjectDir, [string]$FeatureScope = '') {
+    $stateFile         = Get-StateFile $AbsProjectDir
+    $coordinatorPrompt = Join-Path $Script:Root 'prompts\assembled\coordinator.md'
+    $workSessionPrompts = @{
+        'charter'          = Join-Path $Script:Root 'prompts\assembled\charter.md'
+        'system-design'    = Join-Path $Script:Root 'prompts\assembled\system-design.md'
+        'feature-registry' = Join-Path $Script:Root 'prompts\assembled\feature-registry.md'
+        'feature-design'   = Join-Path $Script:Root 'prompts\assembled\feature-design.md'
+    }
+
+    while ($true) {
+        Write-Host ''
+        Write-Host 'Starting coordinator session...' -ForegroundColor DarkGray
+        Write-Host ''
+        Invoke-ClaudeSession -PromptPath $coordinatorPrompt -ProjectSlug $ProjectSlug -AbsProjectDir $AbsProjectDir -FeatureScope $FeatureScope
+
+        $s           = Get-Content $stateFile -Raw | ConvertFrom-Json
+        $nextSession = $s.next_session
+
+        if ($workSessionPrompts.ContainsKey($nextSession)) {
+            $label = (Get-Culture).TextInfo.ToTitleCase(($nextSession -replace '-', ' '))
+            Write-Host ''
+            Write-Host "Starting $label session..." -ForegroundColor Green
+            Write-Host ''
+            Invoke-ClaudeSession -PromptPath $workSessionPrompts[$nextSession] -ProjectSlug $ProjectSlug -AbsProjectDir $AbsProjectDir
+        }
+        elseif ($nextSession -eq 'done') {
+            Write-Host ''
+            Write-Host "Project '$ProjectSlug' is complete." -ForegroundColor Green
+            Write-Host ''
+            break
+        }
+        # next_session is null, 'building', or unrecognised — loop back to coordinator
     }
 }
 
@@ -222,7 +257,7 @@ function Invoke-Resume {
     if ($Feature) { Write-Host "  Feature scope: $Feature" -ForegroundColor Green }
     Write-Host ''
 
-    Start-Session -ProjectSlug $Project -AbsProjectDir $absDir -FeatureScope $Feature
+    Invoke-HarnessLoop -ProjectSlug $Project -AbsProjectDir $absDir -FeatureScope $Feature
 }
 
 # ── new ───────────────────────────────────────────────────────────────────────
@@ -312,7 +347,8 @@ function Invoke-New {
         "Create: $configFile"
         "Create: $stateFile"
         "Update: projects.json"
-        "Note:   add .orchestrator/ to $absProjectDir\.gitignore (manual step)"
+        "Create/Update: $absProjectDir\.gitignore (adds .orchestrator/ if not already ignored)"
+        "Create/Update: $absProjectDir\.claude\settings.json (read-only permissions allowlist)"
         "Launch: orchestrator session (GitHub labels + planning branch created by agent on first run)"
     )
 
@@ -340,6 +376,61 @@ function Invoke-New {
     # 1. Create .orchestrator/ directory in project repo
     if (-not (Test-Path $orchestratorDir)) {
         New-Item -ItemType Directory -Path $orchestratorDir -Force | Out-Null
+    }
+
+    # 1b. Create or update .gitignore so local orchestrator state is never committed.
+    # Toolchain/language is not known yet at this point (discovered during system design),
+    # so this stays generic — agents extend it later as the toolchain becomes clear.
+    $gitignorePath = Join-Path $absProjectDir '.gitignore'
+    if (-not (Test-Path $gitignorePath)) {
+        @(
+            '# Orchestrator runtime state (do not commit)'
+            '.orchestrator/'
+            ''
+            '# OS cruft'
+            '.DS_Store'
+            'Thumbs.db'
+            ''
+        ) -join "`n" | Set-Content $gitignorePath -Encoding utf8
+        Write-Host "  + $gitignorePath" -ForegroundColor Green
+    }
+    elseif ((Get-Content $gitignorePath -Raw) -notmatch '(?m)^\.orchestrator/?\s*$') {
+        Add-Content $gitignorePath -Value "`n# Orchestrator runtime state (do not commit)`n.orchestrator/" -Encoding utf8
+        Write-Host "  + appended .orchestrator/ to $gitignorePath" -ForegroundColor Green
+    }
+
+    # 1c. Write a committed permissions allowlist so read-only tool access to the
+    # project doesn't need re-approving every time the harness launches a fresh
+    # per-stage claude process. Read/Glob/Grep are unscoped (tool-only) because the
+    # settings file itself is project-scoped. Git allowlist is deliberately narrow
+    # (status/log/diff/show) — destructive git commands still prompt.
+    $claudeDir           = Join-Path $absProjectDir '.claude'
+    $claudeSettingsPath  = Join-Path $claudeDir 'settings.json'
+    $allowlist = @(
+        'Read'
+        'Glob'
+        'Grep'
+        'Bash(git status)'
+        'Bash(git status *)'
+        'Bash(git log *)'
+        'Bash(git diff *)'
+        'Bash(git show *)'
+    )
+    if (-not (Test-Path $claudeDir)) {
+        New-Item -ItemType Directory -Path $claudeDir -Force | Out-Null
+    }
+    if (-not (Test-Path $claudeSettingsPath)) {
+        @{ permissions = @{ allow = $allowlist } } | ConvertTo-Json -Depth 10 | Set-Content $claudeSettingsPath -Encoding utf8
+        Write-Host "  + $claudeSettingsPath" -ForegroundColor Green
+    }
+    else {
+        $existingSettings = Get-Content $claudeSettingsPath -Raw | ConvertFrom-Json -AsHashtable
+        if (-not $existingSettings.ContainsKey('permissions')) { $existingSettings['permissions'] = @{} }
+        if (-not $existingSettings['permissions'].ContainsKey('allow')) { $existingSettings['permissions']['allow'] = @() }
+        $merged = @($existingSettings['permissions']['allow']) + $allowlist | Select-Object -Unique
+        $existingSettings['permissions']['allow'] = $merged
+        $existingSettings | ConvertTo-Json -Depth 10 | Set-Content $claudeSettingsPath -Encoding utf8
+        Write-Host "  + merged permissions allowlist into $claudeSettingsPath" -ForegroundColor Green
     }
 
 @"
@@ -384,6 +475,9 @@ orchestrator:
   "instance_id": "$instanceId",
   "github_username": "$ghUser",
   "stage": "init",
+  "next_session": "charter",
+  "feature_design_queue": [],
+  "current_feature": null,
   "escalation_target": "$escalationTarget",
   "paused": false,
   "pause_reason": null,
@@ -405,15 +499,11 @@ orchestrator:
     Write-Host ''
     Write-Host "Project '$Project' initialized." -ForegroundColor Green
     Write-Host ''
-    Write-Host 'IMPORTANT: add .orchestrator/ to your project .gitignore to prevent' -ForegroundColor Yellow
-    Write-Host "           committing local runtime state:" -ForegroundColor Yellow
-    Write-Host "           echo '.orchestrator/' >> $absProjectDir\.gitignore" -ForegroundColor Yellow
-    Write-Host ''
-    Write-Host 'Starting orchestrator session...' -ForegroundColor Green
+    Write-Host 'Starting harness...' -ForegroundColor Green
     Write-Host ''
 
-    # 6. Launch orchestrator
-    Start-Session -ProjectSlug $Project -AbsProjectDir $absProjectDir
+    # 6. Enter harness loop
+    Invoke-HarnessLoop -ProjectSlug $Project -AbsProjectDir $absProjectDir
 }
 
 # ── Dispatch ───────────────────────────────────────────────────────────────────

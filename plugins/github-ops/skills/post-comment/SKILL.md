@@ -1,6 +1,5 @@
 ---
 description: Post a comment to a GitHub Issue or Pull Request. Invoke explicitly for escalation notices, status updates, review feedback, and pause/release notifications. Dry-run by default.
-disable-model-invocation: true
 allowed-tools:
   - "Bash(gh issue comment *)"
   - "Bash(gh pr comment *)"

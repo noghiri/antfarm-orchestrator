@@ -32,18 +32,18 @@ The harness loop (`Invoke-HarnessLoop`) alternates between coordinator sessions 
 ---
 
 ### D4 — Dry-run scope and opt-in mechanism
-**Decision:** `house-style/dry-run` governs **generated code** (scripts/tools agents write) with destructive side effects. It does NOT govern the orchestrator's own operational mutations.
+**Decision:** `house-style:dry-run` governs **generated code** (scripts/tools agents write) with destructive side effects. It does NOT govern the orchestrator's own operational mutations.
 
 Orchestrator mutations use **stage-level authorization**: the human's approval at each gate authorizes all mutations for that stage without per-operation confirmation.
 
-`house-style/dry-run` has been updated to reflect this scope.
+`house-style:dry-run` has been updated to reflect this scope.
 
 ---
 
 ### D5 — Multi-instance: feature-boundary claiming
-**Decision:** Multi-instance is a v1 requirement. Each instance is assigned a single feature via `--feature F001` at startup. Feature-boundary exclusion is enforced by `github-ops/claim-work-unit`: before claiming any work unit issue, the skill verifies the issue's `feature/<feature-id>` label matches this instance's assigned feature. Work-unit-level race conditions are structurally prevented.
+**Decision:** Multi-instance is a v1 requirement. Each instance is assigned a single feature via `--feature F001` at startup. Feature-boundary exclusion is enforced by `github-ops:claim-work-unit`: before claiming any work unit issue, the skill verifies the issue's `feature/<feature-id>` label matches this instance's assigned feature. Work-unit-level race conditions are structurally prevented.
 
-Residual race (two instances incorrectly assigned the same feature): the alphabetical-yield protocol in `workflow-utils/multi-instance` applies, and the incident is surfaced to the human.
+Residual race (two instances incorrectly assigned the same feature): the alphabetical-yield protocol in `workflow-utils:multi-instance` applies, and the incident is surfaced to the human.
 
 ---
 
@@ -74,7 +74,7 @@ Residual race (two instances incorrectly assigned the same feature): the alphabe
 **Implementation:**
 - Each planning session clears `next_session` to `null` as its first action (startup procedure), then reads all relevant durable state
 - `prompts/assembled/coordinator.md` has a "Context management" section specifying the stateless principle, compaction signal points, and durable sources
-- `workflow-utils/context-reload` defines the reload procedure for the coordinator: state file → project config → planning document inventory → reconcile-state → dependency graph
+- `workflow-utils:context-reload` defines the reload procedure for the coordinator: state file → project config → planning document inventory → reconcile-state → dependency graph
 - Because each work session is a fresh top-level process, it has no inherited context — it loads exactly what it needs from durable state at startup
 
 ---
@@ -94,7 +94,7 @@ Residual race (two instances incorrectly assigned the same feature): the alphabe
 ---
 
 ### D11 — Interactive intake skill for planning sessions
-**Decision:** A dedicated `agent-skills/intake` skill is created. All planning work sessions (charter, system-design, feature-registry, feature-design) load it before drafting any document. The skill enforces a structured discovery dialog: introduce scope, ask one question at a time, summarize understanding, get explicit user confirmation before proceeding to draft.
+**Decision:** A dedicated `agent-skills:intake` skill is created. All planning work sessions (charter, system-design, feature-registry, feature-design) load it before drafting any document. The skill enforces a structured discovery dialog: introduce scope, ask one question at a time, summarize understanding, get explicit user confirmation before proceeding to draft.
 
 **Rationale:** All planning sessions share the same failure mode (assuming rather than asking). A shared skill is more maintainable than duplicating intake logic in each prompt.
 
@@ -135,13 +135,13 @@ Residual race (two instances incorrectly assigned the same feature): the alphabe
 
 ### Skill infrastructure
 - **Cross-reference audit** (Task #11): all 44 skills verified, zero broken references
-- **`agent-skills/spin-agent`**: invocation updated to explicitly use `Agent` tool with `subagent_type: general-purpose`; assembled context is the full `prompt` value
-- **`workflow-utils/context-assembly`**: added behavioral preset instructions section; updated assembly procedure to embed them as the first block of every sub-agent prompt
-- **`workflow-utils/multi-instance`**: feature-boundary claiming is now the primary exclusion model, not a soft convention; added explicit statement that two instances on the same feature is a configuration error
-- **`github-ops/claim-work-unit`**: added step 1 — verify feature scope label before claiming
-- **`house-style/dry-run`**: scope narrowed to generated code; orchestrator operations explicitly exempted
-- **`workflow-utils/context-reload`** (new): reload procedure from durable state
-- **`workflow-utils/context-assembly`**: behavioral preset instructions per role; planning document full content reserved for sub-agents
+- **`agent-skills:spin-agent`**: invocation updated to explicitly use `Agent` tool with `subagent_type: general-purpose`; assembled context is the full `prompt` value
+- **`workflow-utils:context-assembly`**: added behavioral preset instructions section; updated assembly procedure to embed them as the first block of every sub-agent prompt
+- **`workflow-utils:multi-instance`**: feature-boundary claiming is now the primary exclusion model, not a soft convention; added explicit statement that two instances on the same feature is a configuration error
+- **`github-ops:claim-work-unit`**: added step 1 — verify feature scope label before claiming
+- **`house-style:dry-run`**: scope narrowed to generated code; orchestrator operations explicitly exempted
+- **`workflow-utils:context-reload`** (new): reload procedure from durable state
+- **`workflow-utils:context-assembly`**: behavioral preset instructions per role; planning document full content reserved for sub-agents
 
 ### Entry point
 - **`orchestrate.ps1`** (repo root): implements `new`, `resume`, `list`
@@ -160,7 +160,7 @@ Residual race (two instances incorrectly assigned the same feature): the alphabe
 - **Deleted:** `prompts/orchestrator.md`, `prompts/system-planner.md`, `prompts/feature-planner.md` and their assembled counterparts (superseded by the above)
 
 ### Code quality
-- **`code-quality/run-contract-tests`**: fixed Rust convention (function name prefix `contract_`, not comment); added Go; added per-language table with file location, naming, and run command
+- **`code-quality:run-contract-tests`**: fixed Rust convention (function name prefix `contract_`, not comment); added Go; added per-language table with file location, naming, and run command
 - **`docs/templates/ci-workflow.yml`** (new): GitHub Actions CI template with build/test/lint jobs, triggers on `feature/**` and `planning` branches; setup blocks for Rust/Node/Python/Go
 - **`SETUP.md`**: added CI setup step referencing the template
 

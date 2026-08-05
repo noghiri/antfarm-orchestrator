@@ -77,7 +77,7 @@ Six plugin packages loaded into every session:
 
 ```powershell
 # 1. Install plugins (one-time, from inside a Claude Code session)
-/plugin marketplace add <your-github-user>/Orchestrator
+/plugin marketplace add <your-github-user>/antfarm-orchestrator
 /plugin install house-style@orchestrator-plugins
 /plugin install agent-skills@orchestrator-plugins
 /plugin install github-ops@orchestrator-plugins
