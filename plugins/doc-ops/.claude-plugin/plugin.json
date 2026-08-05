@@ -1,6 +1,6 @@
 {
   "name": "doc-ops",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Planning document operations: frontmatter parsing, schema validation, staleness checks, validated writes with git commits, and stage gate checklists.",
   "author": {
     "name": "noghiri@gmail.com"

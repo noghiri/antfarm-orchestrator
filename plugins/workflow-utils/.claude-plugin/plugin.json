@@ -1,6 +1,6 @@
 {
   "name": "workflow-utils",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Orchestration workflow utilities: feature dependency graph, context assembly, split proposals, state reconciliation, CI checks, instance pause/resume, escalation routing, multi-instance coordination, and L1 revision workflow.",
   "author": {
     "name": "noghiri@gmail.com"
