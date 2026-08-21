@@ -403,7 +403,8 @@ function Invoke-New {
     # project doesn't need re-approving every time the harness launches a fresh
     # per-stage claude process. Read/Glob/Grep are unscoped (tool-only) because the
     # settings file itself is project-scoped. Git allowlist is deliberately narrow
-    # (status/log/diff/show) — destructive git commands still prompt.
+    # (status/log/diff/show, with and without a leading `-C <path>`) — destructive
+    # git commands still prompt.
     $claudeDir           = Join-Path $absProjectDir '.claude'
     $claudeSettingsPath  = Join-Path $claudeDir 'settings.json'
     $allowlist = @(
@@ -415,6 +416,11 @@ function Invoke-New {
         'Bash(git log *)'
         'Bash(git diff *)'
         'Bash(git show *)'
+        'Bash(git -C * status)'
+        'Bash(git -C * status *)'
+        'Bash(git -C * log *)'
+        'Bash(git -C * diff *)'
+        'Bash(git -C * show *)'
         'Skill(workflow-utils:reconcile-state)'
         'Skill(github-ops:list-issues)'
         'Skill(doc-ops:parse-frontmatter)'
