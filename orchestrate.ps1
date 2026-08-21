@@ -415,6 +415,9 @@ function Invoke-New {
         'Bash(git log *)'
         'Bash(git diff *)'
         'Bash(git show *)'
+        'Skill(workflow-utils:reconcile-state)'
+        'Skill(github-ops:list-issues)'
+        'Skill(doc-ops:parse-frontmatter)'
     )
     if (-not (Test-Path $claudeDir)) {
         New-Item -ItemType Directory -Path $claudeDir -Force | Out-Null
