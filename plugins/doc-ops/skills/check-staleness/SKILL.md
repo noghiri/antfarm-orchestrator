@@ -16,12 +16,13 @@ Determine whether a planning document is stale relative to its upstream dependen
    - A Feature Design depends on: project-charter, system-design, feature-registry
    - A system-design depends on: project-charter
    - A feature-registry depends on: project-charter, system-design
-3. For each dependency, find the last commit that modified it:
+3. For each dependency, find the calendar date of the last commit that modified it:
    ```sh
-   git log -1 --format="%ci" -- <dependency-path>
+   git log -1 --format="%cd" --date=short -- <dependency-path>
    ```
-4. Compare the dependency's last commit date to the document's `revised` date.
-5. If any dependency was committed after the document's `revised` date, the document is potentially stale.
+   `--date=short` truncates to `YYYY-MM-DD`, matching the frontmatter `revised` field's granularity. Do not use `%ci`/`%cI` (full timestamp) here — comparing a full timestamp against a date-only `revised` value makes same-day edits register as "after" the document (any commit time is later than implied midnight), producing a false-positive staleness warning on the very common case of a document and its dependency being drafted in the same session.
+4. Compare the dependency's last-commit date to the document's `revised` date as calendar dates (both are now `YYYY-MM-DD`).
+5. If any dependency's last-commit date is strictly later than the document's `revised` date, the document is potentially stale. A dependency modified on the same calendar date as the document's `revised` date is not stale.
 
 ## Output
 
