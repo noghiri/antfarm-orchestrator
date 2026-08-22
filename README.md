@@ -4,6 +4,20 @@ A multi-agent system for building software projects with Claude. The Antfarm Orc
 
 ---
 
+## In plain terms
+
+Building software normally means a person writes code, tests it, and fixes mistakes, over and over. The Antfarm Orchestrator does the same job, but with a team of AI agents instead of one person, each with a specific role:
+
+- One agent talks with you up front to figure out what you want to build, and writes it down as a plan.
+- Other agents turn that plan into a list of features, then a detailed spec for each one.
+- Once the plan is solid, a "builder" agent writes the actual code for each piece, and a "reviewer" agent checks that work before it's accepted.
+
+You approve each planning document before the system moves on — nothing gets built on a plan you haven't seen. Once building starts, the system runs mostly on its own, but stops and asks you whenever it hits a decision it shouldn't make without you.
+
+You run it from a PowerShell script (`orchestrate.ps1`) — that's the one command you actually type; it starts and hands off between the Claude agent sessions for you. Everything the system does is tracked in GitHub Issues and a handful of files on disk, so you can close your laptop mid-project and pick up exactly where you left off later.
+
+---
+
 ## How it works
 
 Projects move through two phases:

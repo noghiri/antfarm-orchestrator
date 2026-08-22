@@ -1,6 +1,6 @@
 # Orchestrator Setup
 
-This system manages software projects through two phases (Planning and Building) using a team of specialized Claude agents. This guide covers installing prerequisites and initializing your first project.
+This system manages software projects through two phases (Planning and Building) using a team of specialized Claude agents. This guide covers installing prerequisites and initializing your first project. New to the system? See [README.md § In plain terms](README.md#in-plain-terms) for a plain-language explanation first.
 
 ## Prerequisites
 
