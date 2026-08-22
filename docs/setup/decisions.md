@@ -1,6 +1,6 @@
 # Orchestrator — Architectural Decisions & Implementation Status
 
-_Last updated: 2026-06-18 (D14 added; D1, D7, D11, D12 updated for per-stage session model)._
+_Last updated: 2026-08-21 (D6 superseded — smoke-testing moved to a real target project instead of a sandbox repo; Entry point corrected to match D9; smoke-test status updated)._
 
 ---
 
@@ -48,7 +48,9 @@ Residual race (two instances incorrectly assigned the same feature): the alphabe
 ---
 
 ### D6 — Smoke-test repo
-**Decision:** Deferred. A dedicated sandbox GitHub repo will be created when smoke-testing begins (Task #14). Do not use the Orchestrator repo itself.
+**Original decision (superseded):** Deferred. A dedicated sandbox GitHub repo will be created when smoke-testing begins (Task #14). Do not use the Orchestrator repo itself.
+
+**Superseded by:** Smoke-testing was instead run directly against a real target project (**snackdex**), and follow-up fixes were committed to the Orchestrator repo itself under a `[smoketest]` tag (e.g. `7b8d61b`, `413c60f`). See `docs/setup/test-run-notes.md` for the run log and resulting to-do items, tracked as GitHub Issues in this repo.
 
 ---
 
@@ -145,7 +147,7 @@ Residual race (two instances incorrectly assigned the same feature): the alphabe
 
 ### Entry point
 - **`orchestrate.ps1`** (repo root): implements `new`, `resume`, `list`
-  - `new`: requires `--ProjectDir <path>`; interactive prompts, dry-run by default, `-Execute` to apply; creates `.orchestrator/` in the project dir with `state.json` and `project.yaml`; creates GitHub labels (idempotent with `--force`), planning branch; launches orchestrator session
+  - `new`: requires `--ProjectDir <path>`; interactive prompts, dry-run by default, `-Execute` to apply; creates `.orchestrator/` in the project dir with `state.json` and `project.yaml`; launches orchestrator session, which creates GitHub labels and the planning branch on first run (per D9)
   - `resume`: looks up `dir` from `projects.json`, validates project exists, launches session with optional `--Feature` scope
   - `list`: reads `projects.json` and state files from each registered `dir`, prints table
   - State at `<project-dir>/.orchestrator/state.json`; config at `<project-dir>/.orchestrator/project.yaml`; `projects.json` stores `{slug, dir, repo}`
@@ -171,12 +173,6 @@ Residual race (two instances incorrectly assigned the same feature): the alphabe
 
 ## Remaining Work
 
-### Smoke-test (blocked on sandbox repo)
+### Smoke-test status (see D6)
 
-Once a dedicated sandbox GitHub repo is available, run the orchestrator through the full planning stage using the Ping Server example from `docs/setup/walkthrough.md`:
-
-1. `.\orchestrate.ps1 new -Project ping-server -Repo <sandbox-org>/ping-server -ProjectDir <path-to-local-clone> -Execute`
-2. Full planning stage: charter → system design → feature registry → feature design (each as its own harness-launched session)
-3. Validate against the checklist table at the bottom of `docs/setup/walkthrough.md`
-
-This is the acceptance test for "usable." Do not proceed to building-stage automation until planning stage passes.
+Smoke-testing is no longer blocked — per D6, it was run directly against a real target project (**snackdex**) rather than the Ping Server example from `docs/setup/walkthrough.md`. The planning stage has been exercised end-to-end; open follow-ups surfaced by that run are tracked as GitHub Issues in this repo (originating from `docs/setup/test-run-notes.md`). `docs/setup/walkthrough.md`'s Ping Server checklist remains available as a smaller, self-contained reference walkthrough, but is no longer the acceptance test being tracked here.
