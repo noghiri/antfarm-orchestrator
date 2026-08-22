@@ -235,7 +235,7 @@ Before locking in scope boundaries with the human, spawn a review sub-agent via 
 
 Tone for the sub-agent: adversarial in thinking, blunt, professionally direct — not a diplomatic rubber stamp.
 
-This is a hard gate: do not proceed to step 5 until every finding is either fixed in the proposal or explicitly overridden by the human with a stated reason. Do not silently drop a finding.
+This is a hard gate: do not proceed to step 5 until every finding is resolved. Resolving a finding is never unilateral — do not fix it and simply disclose the fix afterward. For each finding, present it to the human along with your proposed resolution and let them choose: accept the proposed fix, propose a different fix, or override the finding with a stated reason. Only apply a fix once the human has weighed in. Do not silently drop a finding.
 
 ### 5. Confirm scope boundaries
 
@@ -243,7 +243,7 @@ For each feature, confirm with the human:
 - Is this the right level of granularity? (Not too broad, not too narrow)
 - Are the dependencies correct?
 - Is anything missing?
-- Present the adversarial review's findings (if any) alongside these questions — resolve or explicitly override each one with the human before moving on.
+- Confirm the resolutions reached with the human during step 4 (if any findings were raised) are reflected correctly here before moving on.
 
 Use `split-proposal` if any feature appears too large to design in a single Feature Design session.
 

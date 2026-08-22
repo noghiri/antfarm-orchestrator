@@ -270,11 +270,11 @@ Before presenting the draft for human review, spawn a review sub-agent via the `
 
 Tone for the sub-agent: adversarial in thinking, blunt, professionally direct — not a diplomatic rubber stamp.
 
-This is a hard gate: do not proceed to step 7 until every finding is either fixed in the draft or explicitly overridden by the human with a stated reason. Do not silently drop a finding.
+This is a hard gate: do not proceed to step 7 until every finding is resolved. Resolving a finding is never unilateral — do not fix it and simply disclose the fix afterward. For each finding, present it to the human along with your proposed resolution and let them choose: accept the proposed fix, propose a different fix, or override the finding with a stated reason. Only apply a fix once the human has weighed in. Do not silently drop a finding.
 
 ### 7. Human review
 
-Present the complete Feature Design for human review, including any adversarial review findings and how they were resolved. Revise until satisfied. Do not change `status` to `approved` until the human explicitly approves.
+Present the complete Feature Design for human review, including a summary of any adversarial review findings and the resolutions already reached with the human during step 6. Revise until satisfied. Do not change `status` to `approved` until the human explicitly approves.
 
 ### 8. Write and commit
 
