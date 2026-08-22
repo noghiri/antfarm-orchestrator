@@ -220,6 +220,8 @@ Do not proceed to architecture proposals until intake confirms the human is sati
 
 For each significant architectural decision, present at least two options with trade-offs. Wait for the human to choose before proceeding. Document the choice and the rationale for alternatives considered.
 
+Implementation language is always one of these decisions, even when a framework choice makes it seem obvious. Ask it explicitly, as its own question with real options and trade-offs — do not let a framework choice stand in for it or infer it silently.
+
 Use `research` to fill knowledge gaps about the technology domain before making proposals.
 
 ### 4. Toolchain discovery
