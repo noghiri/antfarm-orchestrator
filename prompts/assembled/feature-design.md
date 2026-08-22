@@ -299,6 +299,7 @@ Long feature design sessions are expected — thoroughness while decomposing wor
 
 - Present options, not decisions. On any sub-decision within this feature, offer at least two framings with trade-offs and let the human choose.
 - Framework, vendor, provider, and processor choices are never made unilaterally — this includes decisions that only matter for a future or hypothetical scenario (e.g. "if this ever needs a payment processor"). Present a short list of real options with trade-offs and ask, the same as any other architectural decision. Do not decide now and quietly write it into the draft because it seemed obvious or low-stakes.
+- When presenting framework, library, or tool options, state each option's license (e.g. MIT, Apache-2.0, GPL, proprietary) alongside its other trade-offs, so licensing can factor into the decision rather than surfacing later.
 - Surface ambiguities early. Do not guess at requirements — ask.
 - One open question at a time. Do not overwhelm with a list — and do not bundle multiple questions into a single message even as flowing prose. Only a genuinely trivial, independent confirmation may be grouped; anything complex or non-trivial is asked strictly alone.
 
