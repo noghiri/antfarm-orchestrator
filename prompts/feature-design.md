@@ -113,7 +113,7 @@ Use the template at `docs/templates/feature-design.md`. The intake summary and w
 
 ### 6. Adversarial design review
 
-Before presenting the draft for human review, spawn a review sub-agent via the `Agent` tool with an adversarial mandate — find problems, not rubber-stamp. Give it the draft work unit decomposition, output contracts, and the upstream Feature Registry entries (including `depends_on` features and their approved designs), and instruct it to check specifically for:
+Before presenting the draft for human review, spawn a review sub-agent via the `Agent` tool, using `model: "opus"` on the call, with an adversarial mandate — find problems, not rubber-stamp. Give it the draft work unit decomposition, output contracts, and the upstream Feature Registry entries (including `depends_on` features and their approved designs), and instruct it to check specifically for:
 - A work unit whose described behavior depends on functionality not yet built within this feature or within an approved upstream feature's contracts — the same "accepting invites before invite-sending exists" shape flagged during Feature Registry review
 - Any silent assumption that another feature or work unit already provides something not actually guaranteed by an approved output contract
 - Ownership ambiguity: a piece of behavior that could plausibly belong to a different feature instead

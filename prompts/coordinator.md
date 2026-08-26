@@ -142,8 +142,8 @@ Triggered when `stage` is `"building"`. Own the full build loop.
 1. Use `dependency-graph` to identify which features are ready to build (dependencies complete).
 2. Use `list-issues` to find unclaimed work units for ready features.
 3. For each unclaimed work unit, check claiming rules (single-instance: claim; multi-instance: check feature boundary).
-4. Spawn a `builder` agent with the assembled context for the work unit.
-5. When the builder completes, spawn a `reviewer` agent.
+4. Spawn a `builder` agent with the assembled context for the work unit, using `model: "sonnet"` on the `Agent` tool call.
+5. When the builder completes, spawn a `reviewer` agent, using `model: "opus"` on the `Agent` tool call — review needs the most capable model to catch mistakes.
 6. When the reviewer approves, run the Work Unit Completion Gate. If it passes, transition the work unit to `status/complete`.
 7. When all work units for a feature are complete, run the Feature Integration Gate.
 8. Loop until all features are complete.

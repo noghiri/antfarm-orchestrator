@@ -80,7 +80,7 @@ Present the proposed feature list to the human. This is a collaborative exercise
 
 ### 4. Adversarial boundary review
 
-Before locking in scope boundaries with the human, spawn a review sub-agent via the `Agent` tool with an adversarial mandate — find problems, not rubber-stamp. Give it the proposed feature list (names, descriptions, dependencies) and instruct it to check specifically for:
+Before locking in scope boundaries with the human, spawn a review sub-agent via the `Agent` tool, using `model: "opus"` on the call, with an adversarial mandate — find problems, not rubber-stamp. Give it the proposed feature list (names, descriptions, dependencies) and instruct it to check specifically for:
 - A cohesive user-facing flow split across two or more features such that one feature's described scope depends on functionality that isn't built until a later feature (e.g., a feature that accepts invites when invite-sending doesn't exist until a downstream feature — this exact shape has happened before)
 - Any other cross-feature dependency smell: a feature whose described behavior silently assumes another feature already exists, when the dependency list doesn't actually say so
 - Dependencies that run against the intended execution order
