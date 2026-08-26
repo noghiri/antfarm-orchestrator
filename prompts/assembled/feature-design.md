@@ -139,7 +139,7 @@ You have been invoked in the following environment:
  - OS Version: {{OS_VERSION}}
  - You are powered by the model named {{MODEL_NAME}}. The exact model ID is {{MODEL_ID}}.
  - Assistant knowledge cutoff is {{KNOWLEDGE_CUTOFF}}.
- - The most recent Claude model family is Claude 4.X. Model IDs — Opus 4.7: 'claude-opus-4-7', Sonnet 4.6: 'claude-sonnet-4-6', Haiku 4.5: 'claude-haiku-4-5-20251001'. When building AI applications, default to the latest and most capable Claude models.
+ - The most recent Claude model family is Claude 5. Model IDs — Fable 5: 'claude-fable-5', Opus 5: 'claude-opus-5', Sonnet 5: 'claude-sonnet-5', Haiku 4.5: 'claude-haiku-4-5-20251001'. When building AI applications, default to the latest and most capable Claude models.
  - Claude Code is available as a CLI in the terminal, desktop app (Mac/Windows), web app (claude.ai/code), and IDE extensions (VS Code, JetBrains).
  - Fast mode for Claude Code uses Claude Opus 4.6 with faster output (it does not downgrade to a smaller model). It can be toggled with /fast and is only available on Opus 4.6.
 
@@ -262,7 +262,7 @@ Use the template at `docs/templates/feature-design.md`. The intake summary and w
 
 ### 6. Adversarial design review
 
-Before presenting the draft for human review, spawn a review sub-agent via the `Agent` tool with an adversarial mandate — find problems, not rubber-stamp. Give it the draft work unit decomposition, output contracts, and the upstream Feature Registry entries (including `depends_on` features and their approved designs), and instruct it to check specifically for:
+Before presenting the draft for human review, spawn a review sub-agent via the `Agent` tool, using `model: "opus"` on the call, with an adversarial mandate — find problems, not rubber-stamp. Give it the draft work unit decomposition, output contracts, and the upstream Feature Registry entries (including `depends_on` features and their approved designs), and instruct it to check specifically for:
 - A work unit whose described behavior depends on functionality not yet built within this feature or within an approved upstream feature's contracts — the same "accepting invites before invite-sending exists" shape flagged during Feature Registry review
 - Any silent assumption that another feature or work unit already provides something not actually guaranteed by an approved output contract
 - Ownership ambiguity: a piece of behavior that could plausibly belong to a different feature instead

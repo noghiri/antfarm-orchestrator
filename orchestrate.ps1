@@ -59,6 +59,35 @@ $Script:OrchestratorSubdir = '.orchestrator'
 $Script:StateFileName      = 'state.json'
 $Script:ConfigFileName     = 'project.yaml'
 
+# ── Model tiering ─────────────────────────────────────────────────────────────
+# Intended tiering: coordinator = Haiku (minimal, pure routing/gate-checking),
+# planners = Sonnet, reviewers = Opus (needs the most capable model to catch
+# mistakes), builders = Sonnet. Aliases (not pinned IDs) so this tracks each
+# family's latest model automatically instead of going stale like a pinned ID does.
+# TODO: KNOWLEDGE_CUTOFF is shared across all tiers below as a placeholder —
+# Haiku and Sonnet/Opus are different model generations and likely have
+# different actual cutoffs; verify per-tier values before relying on this for
+# anything user-facing.
+$Script:KnowledgeCutoffPlaceholder = 'unknown'
+$Script:ModelTiers = @{
+    'haiku'  = @{ Alias = 'haiku';  Name = 'Haiku 4.5'; Id = 'claude-haiku-4-5-20251001' }
+    'sonnet' = @{ Alias = 'sonnet'; Name = 'Sonnet 5';  Id = 'claude-sonnet-5' }
+    'opus'   = @{ Alias = 'opus';   Name = 'Opus 5';    Id = 'claude-opus-5' }
+}
+
+# Effort is orthogonal to model tier (the 'sonnet' tier is shared by planners
+# and the builder at different effort levels), so it's passed independently
+# rather than folded into $ModelTiers above.
+# NOTE: this only covers the two session types orchestrate.ps1 itself launches
+# as top-level `claude` processes (coordinator, planners). Builder and reviewer
+# are spawned as `Agent`-tool sub-agents from inside the live coordinator
+# session (see prompts/coordinator.md's "building" stage) — the `Agent` tool
+# has no effort/reasoning parameter in its schema, so their intended effort
+# (builder: medium, reviewer: high) cannot currently be enforced in code. Wire
+# it in here if/when that tool gains an effort parameter.
+$Script:CoordinatorEffort = 'low'
+$Script:PlannerEffort     = 'high'
+
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 function Assert-Tool([string]$Name, [string]$Hint) {
@@ -121,7 +150,19 @@ function Show-DryRun([string[]]$Actions) {
     Write-Host ''
 }
 
-function Invoke-ClaudeSession([string]$PromptPath, [string]$ProjectSlug, [string]$AbsProjectDir, [string]$FeatureScope = '') {
+function Invoke-ClaudeSession([string]$PromptPath, [string]$ProjectSlug, [string]$AbsProjectDir, [string]$FeatureScope = '', [string]$ModelTier = 'sonnet', [string]$Effort = '') {
+    if (-not $Script:ModelTiers.ContainsKey($ModelTier)) {
+        Write-Error "Unknown model tier '$ModelTier'. Valid tiers: $($Script:ModelTiers.Keys -join ', ')"
+        exit 1
+    }
+    $tier = $Script:ModelTiers[$ModelTier]
+
+    $validEfforts = @('low', 'medium', 'high', 'xhigh', 'max')
+    if ($Effort -and $Effort -notin $validEfforts) {
+        Write-Error "Unknown effort level '$Effort'. Valid levels: $($validEfforts -join ', ')"
+        exit 1
+    }
+
     $startupContext = "Orchestrator startup context -- project_slug: $ProjectSlug  project_dir: $AbsProjectDir"
     if ($FeatureScope) { $startupContext += "  feature_scope: $FeatureScope" }
 
@@ -140,9 +181,9 @@ function Invoke-ClaudeSession([string]$PromptPath, [string]$ProjectSlug, [string
         -replace '\{\{PLATFORM\}\}',         'win32' `
         -replace '\{\{SHELL\}\}',            'PowerShell' `
         -replace '\{\{OS_VERSION\}\}',       ([System.Environment]::OSVersion.VersionString) `
-        -replace '\{\{MODEL_NAME\}\}',       'Sonnet 4.6' `
-        -replace '\{\{MODEL_ID\}\}',         'claude-sonnet-4-6' `
-        -replace '\{\{KNOWLEDGE_CUTOFF\}\}', 'August 2025' `
+        -replace '\{\{MODEL_NAME\}\}',       $tier.Name `
+        -replace '\{\{MODEL_ID\}\}',         $tier.Id `
+        -replace '\{\{KNOWLEDGE_CUTOFF\}\}', $Script:KnowledgeCutoffPlaceholder `
         -replace '\{\{GIT_STATUS\}\}',       $gitStatus
 
     $prompt += "`n`n$startupContext"
@@ -151,7 +192,10 @@ function Invoke-ClaudeSession([string]$PromptPath, [string]$ProjectSlug, [string
     Push-Location $AbsProjectDir
     try {
         Set-Content $tmpFile -Value $prompt -Encoding utf8
-        & claude --system-prompt-file $tmpFile --model claude-sonnet-4-6 'Begin the session per your Session startup / Startup procedure instructions.'
+        $claudeArgs = @('--system-prompt-file', $tmpFile, '--model', $tier.Alias)
+        if ($Effort) { $claudeArgs += @('--effort', $Effort) }
+        $claudeArgs += 'Begin the session per your Session startup / Startup procedure instructions.'
+        & claude @claudeArgs
     }
     finally {
         Pop-Location
@@ -173,7 +217,7 @@ function Invoke-HarnessLoop([string]$ProjectSlug, [string]$AbsProjectDir, [strin
         Write-Host ''
         Write-Host 'Starting coordinator session...' -ForegroundColor DarkGray
         Write-Host ''
-        Invoke-ClaudeSession -PromptPath $coordinatorPrompt -ProjectSlug $ProjectSlug -AbsProjectDir $AbsProjectDir -FeatureScope $FeatureScope
+        Invoke-ClaudeSession -PromptPath $coordinatorPrompt -ProjectSlug $ProjectSlug -AbsProjectDir $AbsProjectDir -FeatureScope $FeatureScope -ModelTier 'haiku' -Effort $Script:CoordinatorEffort
 
         $s           = Get-Content $stateFile -Raw | ConvertFrom-Json
         $nextSession = $s.next_session
@@ -183,7 +227,7 @@ function Invoke-HarnessLoop([string]$ProjectSlug, [string]$AbsProjectDir, [strin
             Write-Host ''
             Write-Host "Starting $label session..." -ForegroundColor Green
             Write-Host ''
-            Invoke-ClaudeSession -PromptPath $workSessionPrompts[$nextSession] -ProjectSlug $ProjectSlug -AbsProjectDir $AbsProjectDir
+            Invoke-ClaudeSession -PromptPath $workSessionPrompts[$nextSession] -ProjectSlug $ProjectSlug -AbsProjectDir $AbsProjectDir -ModelTier 'sonnet' -Effort $Script:PlannerEffort
         }
         elseif ($nextSession -eq 'done') {
             Write-Host ''

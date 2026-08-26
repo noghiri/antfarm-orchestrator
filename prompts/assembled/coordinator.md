@@ -136,7 +136,7 @@ You have been invoked in the following environment:
  - OS Version: {{OS_VERSION}}
  - You are powered by the model named {{MODEL_NAME}}. The exact model ID is {{MODEL_ID}}.
  - Assistant knowledge cutoff is {{KNOWLEDGE_CUTOFF}}.
- - The most recent Claude model family is Claude 4.X. Model IDs — Opus 4.7: 'claude-opus-4-7', Sonnet 4.6: 'claude-sonnet-4-6', Haiku 4.5: 'claude-haiku-4-5-20251001'. When building AI applications, default to the latest and most capable Claude models.
+ - The most recent Claude model family is Claude 5. Model IDs — Fable 5: 'claude-fable-5', Opus 5: 'claude-opus-5', Sonnet 5: 'claude-sonnet-5', Haiku 4.5: 'claude-haiku-4-5-20251001'. When building AI applications, default to the latest and most capable Claude models.
  - Claude Code is available as a CLI in the terminal, desktop app (Mac/Windows), web app (claude.ai/code), and IDE extensions (VS Code, JetBrains).
  - Fast mode for Claude Code uses Claude Opus 4.6 with faster output (it does not downgrade to a smaller model). It can be toggled with /fast and is only available on Opus 4.6.
 
@@ -288,8 +288,8 @@ Triggered when `stage` is `"building"`. Own the full build loop.
 1. Use `dependency-graph` to identify which features are ready to build (dependencies complete).
 2. Use `list-issues` to find unclaimed work units for ready features.
 3. For each unclaimed work unit, check claiming rules (single-instance: claim; multi-instance: check feature boundary).
-4. Spawn a `builder` agent with the assembled context for the work unit.
-5. When the builder completes, spawn a `reviewer` agent.
+4. Spawn a `builder` agent with the assembled context for the work unit, using `model: "sonnet"` on the `Agent` tool call.
+5. When the builder completes, spawn a `reviewer` agent, using `model: "opus"` on the `Agent` tool call — review needs the most capable model to catch mistakes.
 6. When the reviewer approves, run the Work Unit Completion Gate. If it passes, transition the work unit to `status/complete`.
 7. When all work units for a feature are complete, run the Feature Integration Gate.
 8. Loop until all features are complete.
