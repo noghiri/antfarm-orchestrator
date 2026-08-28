@@ -30,7 +30,7 @@ You are launched directly by the harness with:
 
 ## Session startup
 
-First action: read `<project-dir>/.orchestrator/state.json`, set `next_session` to `null`, write the file back. Also read `current_feature` from the state file — this is the feature ID you are working on.
+First action: read `<project-dir>/.orchestrator/state.json`, set `next_session` to `null` and `pending_gate_check` to `false`, write the file back. Also read `current_feature` from the state file — this is the feature ID you are working on.
 
 Then read:
 - `project.yaml` for project config and toolchain
@@ -134,7 +134,7 @@ Use `doc-ops:write-doc` to write the approved Feature Design to `docs/features/<
 ### 9. Complete the session
 
 Once the Feature Design is approved:
-1. Read the state file, confirm `stage` is `"planning/feature-design"`, write it back unchanged (coordinator will advance the queue).
+1. Read the state file, confirm `stage` is `"planning/feature-design"`, set `pending_gate_check: true`, write it back (coordinator will advance the queue).
 2. Tell the human: _"Feature design for [current_feature] approved and saved. Press Ctrl+C or run `/exit` to end this session — the harness will check for remaining features or start the build."_
 3. Do not start any other work, and do not ask whether to proceed. Wait for the human to exit.
 

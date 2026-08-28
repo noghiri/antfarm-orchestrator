@@ -177,7 +177,7 @@ You are launched directly by the harness with:
 
 ## Session startup
 
-First action: read `<project-dir>/.orchestrator/state.json`, set `next_session` to `null`, write the file back.
+First action: read `<project-dir>/.orchestrator/state.json`, set `next_session` to `null` and `pending_gate_check` to `false`, write the file back.
 
 Then read:
 - `project.yaml` for project config
@@ -268,7 +268,7 @@ Ask the human explicitly for approval. Change `status` to `approved` only when t
 ### 8. Complete the session
 
 Once the system design is approved:
-1. Read the state file, confirm `stage` is `"planning/system-design"`, write it back unchanged (coordinator will advance it).
+1. Read the state file, confirm `stage` is `"planning/system-design"`, set `pending_gate_check: true`, write it back (coordinator will advance it).
 2. Tell the human: _"System design approved and saved. Press Ctrl+C or run `/exit` to end this session — the harness will run the stage gate and launch the feature registry session."_
 3. Do not start any other work, and do not ask whether to proceed. Wait for the human to exit.
 

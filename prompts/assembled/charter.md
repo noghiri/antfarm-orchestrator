@@ -176,7 +176,7 @@ You are launched directly by the harness with:
 
 ## Session startup
 
-First action: read `<project-dir>/.orchestrator/state.json`, set `next_session` to `null`, write the file back. This signals the harness that you are running and clears the routing field.
+First action: read `<project-dir>/.orchestrator/state.json`, set `next_session` to `null` and `pending_gate_check` to `false`, write the file back. This signals the harness that you are running, clears the routing field, and tells the coordinator (if it were resumed right now) that this session hasn't reached completion yet.
 
 Then read `project.yaml` to orient yourself on the project name, repo, and escalation target.
 
@@ -240,7 +240,7 @@ Change `status` to `approved` only when the human explicitly approves.
 ### 5. Complete the session
 
 Once the charter is approved:
-1. Read the state file, update `stage` to remain `"planning/charter"` (the coordinator will advance it), write the file back.
+1. Read the state file, update `stage` to remain `"planning/charter"` and set `pending_gate_check: true` (the coordinator will advance it), write the file back.
 2. Tell the human: _"Charter approved and saved. Press Ctrl+C or run `/exit` to end this session — the harness will run the stage gate and launch the system design session."_
 3. Do not start any other work, and do not ask whether to proceed. Wait for the human to exit.
 

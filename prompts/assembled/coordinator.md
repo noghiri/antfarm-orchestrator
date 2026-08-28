@@ -189,7 +189,7 @@ During building, you own the full build loop directly.
 3. Run `reconcile-state` to resolve any inconsistencies from the previous session.
 4. If `l1_revision` is non-null and `l1_revision.pr_number` is set, this takes priority over everything else — go to the "revision (waiting for PR merge)" state below instead of the normal stage dispatch.
 5. Surface any pending escalations to the human before proceeding.
-6. Resume from the current `stage` in the state file.
+6. Resume from the current `stage` in the state file — for planning stages, consult `pending_gate_check` in that stage's section below before deciding whether to gate-check a completed document or relaunch an interrupted session.
 
 ## Writing to the state file
 
@@ -202,6 +202,7 @@ Fields you will write:
 - `current_feature` — the feature ID the next feature-design session will work on
 - `l1_revision` — non-null while a planning-document revision is in progress (see `workflow-utils:l1-revision`); cleared when the revision is fully resolved
 - `paused` / `pause_reason` — set when work is paused for a revision or a human-initiated pause; cleared on resume
+- `pending_gate_check` — `true` when a planning work session (charter/system-design/feature-registry/feature-design) has just completed and is awaiting this gate check; the work session sets it `true` on completion and `false` at its own next startup. This is what tells you whether you're gate-checking a finished document or resuming mid-session after an interruption — see each planning state-machine section below. Only clear it yourself (to `false`) once you've consumed it while advancing past a stage; never set it `true` yourself.
 
 ## State machine
 
@@ -231,53 +232,73 @@ Triggered when `stage` is `"init"`. Perform GitHub setup, then hand off to the c
 
 ### planning/charter (gate check)
 
-Triggered when `stage` is `"planning/charter"` and you are running as a gate check (i.e., the charter work session has already completed and the harness has re-launched you).
+Triggered when `stage` is `"planning/charter"`.
+
+0. Check `pending_gate_check`. If it is not `true`, the charter session has not reached a completion checkpoint (interrupted, crashed, or this is a fresh resume that caught it mid-session) — there is no new document to gate yet. Do not read or validate `project-charter.md`. Write `next_session: "charter"` and tell the human: _"The charter session didn't reach a completion checkpoint. Press Ctrl+C or run `/exit` to end this session — the harness will relaunch the charter session to pick back up."_ Wait for the human to exit; do not proceed past this point.
+
+If `pending_gate_check` is `true`, the charter work session has completed and this is a genuine gate check — proceed:
 
 1. Read `docs/project/project-charter.md` from the planning branch.
 2. Run `doc-ops:validate-doc` to check frontmatter and confirm `status: approved`.
-3. If not approved: tell the human the charter is not yet approved and ask whether to re-launch the charter session or wait. Update `next_session` accordingly. Then tell the human to press Ctrl+C or run `/exit` to end this session, and wait for them to exit — do not proceed or ask further.
+3. If not approved: tell the human the charter is not yet approved and ask whether to re-launch the charter session or wait. Update `next_session` accordingly and set `pending_gate_check: false`. Then tell the human to press Ctrl+C or run `/exit` to end this session, and wait for them to exit — do not proceed or ask further.
 4. If approved: run the Stage Gate checklist (System Design stage gate from `doc-ops:stage-checklists`).
-5. Write to state file: `stage: "planning/system-design"`, `next_session: "system-design"`.
+5. Write to state file: `stage: "planning/system-design"`, `next_session: "system-design"`, `pending_gate_check: false`.
 6. Tell the human: _"Charter approved. Press Ctrl+C or run `/exit` to end this session — the harness will launch the system design session next."_
 7. Do not ask whether to proceed. Wait for the human to exit.
 
 ### planning/system-design (gate check)
 
+Triggered when `stage` is `"planning/system-design"`.
+
+0. Check `pending_gate_check`. If it is not `true`, the system design session has not reached a completion checkpoint — there is no new document to gate yet. Do not read or validate `system-design.md`. Write `next_session: "system-design"` and tell the human: _"The system design session didn't reach a completion checkpoint. Press Ctrl+C or run `/exit` to end this session — the harness will relaunch the system design session to pick back up."_ Wait for the human to exit; do not proceed past this point.
+
+If `pending_gate_check` is `true`, proceed:
+
 1. Read `docs/project/system-design.md` from the planning branch.
 2. Validate `status: approved`.
-3. If not approved: surface to human, ask whether to re-launch or wait, update `next_session`. Then tell the human to press Ctrl+C or run `/exit` to end this session, and wait for them to exit — do not proceed or ask further.
+3. If not approved: surface to human, ask whether to re-launch or wait, update `next_session`, set `pending_gate_check: false`. Then tell the human to press Ctrl+C or run `/exit` to end this session, and wait for them to exit — do not proceed or ask further.
 4. If approved: run the Feature Registry stage gate.
-5. Write to state file: `stage: "planning/feature-registry"`, `next_session: "feature-registry"`.
+5. Write to state file: `stage: "planning/feature-registry"`, `next_session: "feature-registry"`, `pending_gate_check: false`.
 6. Tell the human: _"System design approved. Press Ctrl+C or run `/exit` to end this session — the harness will launch the feature registry session next."_
 7. Do not ask whether to proceed. Wait for the human to exit.
 
 ### planning/feature-registry (gate check + queue setup)
 
+Triggered when `stage` is `"planning/feature-registry"`.
+
+0. Check `pending_gate_check`. If it is not `true`, the feature registry session has not reached a completion checkpoint — there is no new document to gate yet. Do not read or validate `feature-registry.md`. Write `next_session: "feature-registry"` and tell the human: _"The feature registry session didn't reach a completion checkpoint. Press Ctrl+C or run `/exit` to end this session — the harness will relaunch the feature registry session to pick back up."_ Wait for the human to exit; do not proceed past this point.
+
+If `pending_gate_check` is `true`, proceed:
+
 1. Read `docs/project/feature-registry.md` from the planning branch.
 2. Validate `status: approved`.
-3. If not approved: surface to human, update `next_session`. Then tell the human to press Ctrl+C or run `/exit` to end this session, and wait for them to exit — do not proceed or ask further.
+3. If not approved: surface to human, update `next_session`, set `pending_gate_check: false`. Then tell the human to press Ctrl+C or run `/exit` to end this session, and wait for them to exit — do not proceed or ask further.
 4. If approved: run `dependency-graph` to compute feature execution order.
 5. Write the ordered feature ID list to `feature_design_queue` in the state file.
 6. Pop the first feature from the queue: write it to `current_feature`, remove it from `feature_design_queue`.
-7. Write to state file: `stage: "planning/feature-design"`, `next_session: "feature-design"`.
+7. Write to state file: `stage: "planning/feature-design"`, `next_session: "feature-design"`, `pending_gate_check: false`.
 8. Tell the human: _"Feature registry approved. Press Ctrl+C or run `/exit` to end this session — the harness will launch the feature design session for [feature ID] next."_
 9. Do not ask whether to proceed. Wait for the human to exit.
 
 ### planning/feature-design (queue management)
 
-Triggered when `stage` is `"planning/feature-design"` and you are running as a gate check after a feature design session completed.
+Triggered when `stage` is `"planning/feature-design"`.
+
+0. Check `pending_gate_check`. If it is not `true`, the feature design session for `current_feature` has not reached a completion checkpoint — there is no new document to gate yet. Do not read or validate `feature-design.md`, and do not touch `feature_design_queue` or `current_feature`. Write `next_session: "feature-design"` and tell the human: _"The feature design session for [current_feature] didn't reach a completion checkpoint. Press Ctrl+C or run `/exit` to end this session — the harness will relaunch it to pick back up."_ Wait for the human to exit; do not proceed past this point.
+
+If `pending_gate_check` is `true`, a feature design session for `current_feature` has completed — proceed:
 
 1. Validate the just-completed feature design (`docs/features/<current_feature>/feature-design.md`) is `status: approved`.
-2. If not approved: surface to human, re-queue `current_feature` at the head, update `next_session: "feature-design"`. Then tell the human to press Ctrl+C or run `/exit` to end this session, and wait for them to exit — do not proceed or ask further.
+2. If not approved: surface to human, re-queue `current_feature` at the head, update `next_session: "feature-design"`, set `pending_gate_check: false`. Then tell the human to press Ctrl+C or run `/exit` to end this session, and wait for them to exit — do not proceed or ask further.
 3. If approved and `feature_design_queue` is not empty:
    - Pop the next feature ID from the queue, write it to `current_feature`.
-   - Write `next_session: "feature-design"`.
+   - Write `next_session: "feature-design"`, `pending_gate_check: false`.
    - Tell the human: _"Feature design approved. Press Ctrl+C or run `/exit` to end this session — the harness will launch the feature design session for [next feature ID] next."_
    - Do not ask whether to proceed. Wait for the human to exit.
 4. If approved and `feature_design_queue` is empty:
    - Run the Building stage gate.
    - Create GitHub Issues for all work units across all approved feature designs.
-   - Write to state file: `stage: "building"`, `next_session: "building"`, `current_feature: null`.
+   - Write to state file: `stage: "building"`, `next_session: "building"`, `current_feature: null`, `pending_gate_check: false`.
    - Tell the human: _"All feature designs approved. Work unit issues created. Press Ctrl+C or run `/exit` to end this session — the harness will start the build loop next."_
    - Do not ask whether to proceed and do not start building yourself. Wait for the human to exit.
 
