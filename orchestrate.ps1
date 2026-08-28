@@ -150,7 +150,7 @@ function Show-DryRun([string[]]$Actions) {
     Write-Host ''
 }
 
-function Invoke-ClaudeSession([string]$PromptPath, [string]$ProjectSlug, [string]$AbsProjectDir, [string]$FeatureScope = '', [string]$ModelTier = 'sonnet', [string]$Effort = '') {
+function Invoke-ClaudeSession([string]$PromptPath, [string]$ProjectSlug, [string]$AbsProjectDir, [string]$FeatureScope = '', [string]$ModelTier = 'sonnet', [string]$Effort = '', [string]$SessionLabel = '') {
     if (-not $Script:ModelTiers.ContainsKey($ModelTier)) {
         Write-Error "Unknown model tier '$ModelTier'. Valid tiers: $($Script:ModelTiers.Keys -join ', ')"
         exit 1
@@ -191,6 +191,13 @@ function Invoke-ClaudeSession([string]$PromptPath, [string]$ProjectSlug, [string
     $tmpFile = [System.IO.Path]::GetTempFileName()
     Push-Location $AbsProjectDir
     try {
+        if ($SessionLabel) {
+            # Diagnostic aid (test-run-notes.md item 10): a visible window-title cue for
+            # which stage is actually running, so a human can catch a resume-routing
+            # misfire live instead of after the fact. Best-effort — some hosts (CI,
+            # non-interactive terminals) don't support setting WindowTitle.
+            try { $Host.UI.RawUI.WindowTitle = "Antfarm: $ProjectSlug — $SessionLabel" } catch {}
+        }
         Set-Content $tmpFile -Value $prompt -Encoding utf8
         $claudeArgs = @('--system-prompt-file', $tmpFile, '--model', $tier.Alias)
         if ($Effort) { $claudeArgs += @('--effort', $Effort) }
@@ -217,17 +224,21 @@ function Invoke-HarnessLoop([string]$ProjectSlug, [string]$AbsProjectDir, [strin
         Write-Host ''
         Write-Host 'Starting coordinator session...' -ForegroundColor DarkGray
         Write-Host ''
-        Invoke-ClaudeSession -PromptPath $coordinatorPrompt -ProjectSlug $ProjectSlug -AbsProjectDir $AbsProjectDir -FeatureScope $FeatureScope -ModelTier 'haiku' -Effort $Script:CoordinatorEffort
+        Invoke-ClaudeSession -PromptPath $coordinatorPrompt -ProjectSlug $ProjectSlug -AbsProjectDir $AbsProjectDir -FeatureScope $FeatureScope -ModelTier 'haiku' -Effort $Script:CoordinatorEffort -SessionLabel 'Coordinator'
 
         $s           = Get-Content $stateFile -Raw | ConvertFrom-Json
         $nextSession = $s.next_session
 
         if ($workSessionPrompts.ContainsKey($nextSession)) {
             $label = (Get-Culture).TextInfo.ToTitleCase(($nextSession -replace '-', ' '))
+            $sessionLabel = $label
+            if ($nextSession -eq 'feature-design' -and $s.current_feature) {
+                $sessionLabel = "$label ($($s.current_feature))"
+            }
             Write-Host ''
             Write-Host "Starting $label session..." -ForegroundColor Green
             Write-Host ''
-            Invoke-ClaudeSession -PromptPath $workSessionPrompts[$nextSession] -ProjectSlug $ProjectSlug -AbsProjectDir $AbsProjectDir -ModelTier 'sonnet' -Effort $Script:PlannerEffort
+            Invoke-ClaudeSession -PromptPath $workSessionPrompts[$nextSession] -ProjectSlug $ProjectSlug -AbsProjectDir $AbsProjectDir -ModelTier 'sonnet' -Effort $Script:PlannerEffort -SessionLabel $sessionLabel
         }
         elseif ($nextSession -eq 'done') {
             Write-Host ''
@@ -535,7 +546,8 @@ orchestrator:
   "paused": false,
   "pause_reason": null,
   "active_features": {},
-  "l1_revision": null
+  "l1_revision": null,
+  "pending_gate_check": false
 }
 "@ | Set-Content $stateFile -Encoding utf8
     Write-Host "  + $stateFile" -ForegroundColor Green
