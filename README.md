@@ -175,4 +175,12 @@ Orchestrator/                  # This tool's directory
 
 ## Acknowledgements
 
-The behavioral preset system — the agency/quality/scope axes and the fragment-based prompt assembly approach — is adapted from [claude-code-modes](https://github.com/nklisch/claude-code-modes) by [@nklisch](https://github.com/nklisch), licensed under the MIT License. The preset fragment text embedded in `prompts/assembled/` is sourced from that project. `claude-code-modes` is not a runtime dependency — fragments are bundled directly into the assembled prompt files.
+The behavioral preset system — the agency/quality/scope axes and the fragment-based prompt assembly approach — is adapted from [claude-code-modes](https://github.com/nklisch/claude-code-modes) by [@nklisch](https://github.com/nklisch), licensed under the MIT License. The preset fragment text lives in `prompts/fragments/axis/` and is also embedded verbatim in the assembled prompts in `prompts/assembled/`. `claude-code-modes` is not a runtime dependency — fragments are bundled directly into the assembled prompt files.
+
+The `rust-guide` skill in `plugins/house-style/` is derived from [ed3d-plugins](https://github.com/ed3dai/ed3d-plugins) by Ed Ropple and contributors, and is licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Several other skills were independently written but conceptually inspired by ed3d-plugins; those are MIT-licensed original works. See [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) for the full breakdown.
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE), copyright (c) 2026 noghiri, **except** for `plugins/house-style/skills/rust-guide/`, which is a derivative work licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). See [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) for details.
